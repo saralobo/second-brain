@@ -1,17 +1,23 @@
 # Pre-Execution Decisions v0.1 — AVA
 
 ```text
-Status: PENDING DECISION LOCK
-Gate: Resolve pre-execution decisions and start Validation Sprint 0
+Status: LOCKED
+Gate: SPRINT 0 READY TO START
+Lock date: 2026-08-30
 Architecture baseline: Architecture Package v0.2 Final
 Architecture tag: architecture-v0.2-final
-Protocol: Validation Sprint 0 Protocol v0.1
+Validation protocol version: Validation Sprint 0 Protocol v0.1
+Lock commit: docs(validation): lock Sprint 0 pre-execution criteria (branch main)
 Purpose: define the ruler before any result is observed
 ```
 
 **Data:** 30 de agosto de 2026
-**Documento:** decision pack v0.1
+**Documento:** decision pack v0.1 — **DECISION LOCK**
 **Execução do sprint:** NOT STARTED
+
+> These criteria were locked before experimental work data was inspected. Changes after execution starts require explicit protocol deviation and cannot retroactively alter the original GO/PIVOT/STOP evaluation.
+
+**Nota sobre o hash do lock commit:** um commit não pode conter o próprio hash. O commit identificado acima pela mensagem e pela branch é o que carrega este lock; o hash é informado na entrega e no experiment log de cada experimento.
 
 ---
 
@@ -20,6 +26,8 @@ Purpose: define the ruler before any result is observed
 Este documento resolve o último gate antes da execução do Validation Sprint 0: transformar cada campo aberto do protocolo em uma decisão explícita, justificada e travada **antes** de qualquer resultado.
 
 **Regra principal: nenhum dado experimental foi observado ou analisado para produzir este documento.** Todas as recomendações vêm de desenho experimental, não de dados. Nenhuma foi calibrada para que o produto passe.
+
+**Estado deste documento:** as decisões da dona do projeto (tipo B) foram registradas, os Methodological Defaults (tipo A e D) foram aceitos, o escopo (tipo C) foi travado como critério e os thresholds derivados foram resolvidos. **Todas as 38 decisões obrigatórias estão `LOCKED`.** Nenhum campo permanece `PENDING` e não há pre-execution blockers. A partir daqui, alterar qualquer critério exige protocol deviation registrado (protocolo §15) e não recalcula avaliações GO/PIVOT/STOP já feitas.
 
 Nada é alterado aqui: nem o [Architecture Package v0.2 Final](../architecture/architecture-package-v0.2-final.md), nem o [Validation Sprint 0 Protocol v0.1](validation-sprint-0-protocol-v0.1.md), nem a tag `architecture-v0.2-final`, nem as hipóteses.
 
@@ -31,7 +39,7 @@ O relatório de entrega do protocolo informou **29** campos `DECISION REQUIRED B
 
 | Tipo | Significado | Quem decide |
 | --- | --- | --- |
-| **A — Experimental design** | definível por desenho experimental, tamanho de amostra, risco de leakage e esforço operacional | proposto aqui como `PROPOSED` |
+| **A — Experimental design** | definível por desenho experimental, tamanho de amostra, risco de leakage e esforço operacional | proposto aqui, aceito na trava |
 | **B — Product owner threshold** | depende de julgamento da dona do projeto (custo aceitável, ruído tolerável, valor mínimo suficiente) | `OWNER DECISION REQUIRED` |
 | **C — Scope selection** | exige selecionar dados/contexto reais antes da execução | `OWNER DECISION REQUIRED` |
 | **D — Derived dependency** | calculável a partir de outra decisão pré-execução, ainda antes de observar resultados | resolve-se ao travar a decisão-mãe |
@@ -40,13 +48,17 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 
 ### Distribuição
 
-| Tipo | Quantidade |
-| --- | --- |
-| A — Experimental design | 13 |
-| B — Product owner threshold | 10 |
-| C — Scope selection | 5 |
-| D — Derived dependency | 10 |
-| **Total** | **38** |
+| Tipo | Quantidade | Estado |
+| --- | --- | --- |
+| A — Experimental design | 13 | LOCKED (defaults aceitos) |
+| B — Product owner threshold | 10 | LOCKED (decididos pela dona do projeto) |
+| C — Scope selection | 5 | LOCKED (critérios de seleção travados) |
+| D — Derived dependency | 10 | LOCKED (resolvidos a partir das decisões-mãe) |
+| **Total** | **38** | **38 LOCKED · 0 PENDING** |
+
+K-9 é registrado à parte: permanece qualitativo, sem threshold numérico, conforme o protocolo §12.
+
+**Como ler as decisões abaixo.** Cada decisão preserva o texto do momento da proposta — inclusive os campos `Recommended decision: PROPOSED — …` e, nas decisões tipo B, `Recommended decision: OWNER DECISION REQUIRED`. Esse texto **não** é o status atual: ele é o registro histórico do que estava sobre a mesa antes da escolha, mantido intacto para que não seja possível reescrever depois a justificativa de um critério. **O status atual de cada decisão é o campo `Final value` / `Locked before execution`, e a Decision Lock Table de §11 é a referência autoritativa.**
 
 ---
 
@@ -71,8 +83,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold (janela menor):** menos episódios, maior variância, maior risco de concluir GO ou STOP por acaso de um projeto atípico.
 **Consequence of looser threshold (janela maior):** mais `n`, mas maior contaminação por memória imprecisa, maior custo manual e risco de o sprint não terminar.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — 6 semanas consecutivas de trabalho real`
+**Locked before execution:** `YES`
 
 ---
 
@@ -95,8 +107,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold (mais episódios):** conclusão mais robusta; risco real de o sprint não ser concluído, o que é pior que uma conclusão limitada.
 **Consequence of looser threshold (menos episódios):** sprint rápido, conclusões frágeis e não generalizáveis — que o protocolo já exige declarar (princípio 12).
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — ≥12 episódios; parar no alvo, não quando o padrão agradar`
+**Locked before execution:** `YES`
 
 ---
 
@@ -119,8 +131,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold (mais pares):** comparação mais confiável, custo manual possivelmente proibitivo.
 **Consequence of looser threshold (menos pares):** resultado de B vira anedota, o que enfraquece justamente a hipótese H-01, que é a mais decisiva do sprint.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — 8 pares (8 briefings ideais + 8 baselines cronológicas), sem parada antecipada`
+**Locked before execution:** `YES`
 
 ---
 
@@ -140,8 +152,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** menor chance de construir um produto que entrega pouco; maior chance de matar uma tese que era viável em escopo mais estreito.
 **Consequence of looser threshold:** produto avança com valor marginal; risco de descobrir só depois do build que o checkpoint não sustenta atenção.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — ≥2 oportunidades acionáveis por semana` (OD-1, decidido pela dona do projeto)
+**Locked before execution:** `YES`
 
 ---
 
@@ -164,8 +176,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** menos oportunidades qualificam; PIVOT para on-demand fica mais provável.
 **Consequence of looser threshold:** contam como antecipação janelas que o produto real não conseguiria explorar — falso GO.
 
-**Final value:** `PENDING` (resolve ao travar a cadência de checkpoint)
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — anticipation_window ≥ 1 intervalo de checkpoint` (derivado da cadência de checkpoint)
+**Locked before execution:** `YES`
 
 ---
 
@@ -188,8 +200,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** A vira não conclusivo com mais frequência — resultado honesto, porém o sprint pode terminar sem responder H-02.
 **Consequence of looser threshold:** o estudo confunde "eu sabia o que ia acontecer" com "o sinal estava lá", que é exatamente o autoengano que o sprint existe para evitar.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — métricas primárias de A calculadas exclusivamente sobre hindsight_risk = low; A reportado como não conclusivo se mais de 1/3 dos candidatos relevantes for high`
+**Locked before execution:** `YES`
 
 ---
 
@@ -214,8 +226,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** mais falsos negativos por construção; precisa ser lido junto de B-07 para não penalizar o método pela régua.
 **Consequence of looser threshold:** briefing vira inbox; o resultado positivo não distingue valor de volume.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — 3 itens por bloco`
+**Locked before execution:** `YES`
 
 ---
 
@@ -238,8 +250,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** força abstenção, que o protocolo trata como resultado válido; aumenta falsos negativos registrados.
 **Consequence of looser threshold:** o estudo não distingue "promoveu bem" de "mostrou muito".
 
-**Final value:** `PENDING` (resolve ao travar B-01)
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — 10 itens no briefing inteiro` (derivado de B-01)
+**Locked before execution:** `YES`
 
 ---
 
@@ -262,8 +274,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold (intervalo maior):** melhor cegamento, pior fidelidade da dimensão de timing e sprint mais longo.
 **Consequence of looser threshold:** a comparação cega deixa de ser cega e B perde valor probatório, sem que isso apareça no resultado.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — ≥48h entre produção e avaliação, quando aplicável`
+**Locked before execution:** `YES`
 
 ---
 
@@ -281,8 +293,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** protege contra construir um produto que a própria dona ignoraria; pode matar uma tese que funcionaria com cadência mais espaçada.
 **Consequence of looser threshold:** GO com valor marginal; o produto compete mal com simplesmente olhar as fontes.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — ≥1 item útil em ≥75% dos briefings` (OD-2, decidido pela dona do projeto)
+**Locked before execution:** `YES`
 
 ---
 
@@ -300,8 +312,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** força abstenção e briefings curtos; pode reprovar um método que seria útil com top-k menor.
 **Consequence of looser threshold:** o checkpoint vira inbox — risco "proactivity noise" da baseline §33 — e o produto passa no teste enquanto falha no uso real.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — already_known + irrelevant ≤ 33% dos itens promovidos` (OD-3, decidido pela dona do projeto)
+**Locked before execution:** `YES`
 
 ---
 
@@ -321,8 +333,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** H-03 é reprovada cedo, evitando build sobre fontes que exigem curadoria constante.
 **Consequence of looser threshold:** o sprint aprova fontes cuja manutenção manual seria o verdadeiro produto.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — ≤30 minutos de manual normalization effort por checkpoint` (OD-4, decidido pela dona do projeto)
+**Locked before execution:** `YES`
 
 ---
 
@@ -342,8 +354,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** exige alta cobertura; interage com o teto de itens e pode tornar B irreprovável ou irreprovavelmente severo se escolhido isolado.
 **Consequence of looser threshold:** o produto pode falhar silenciosamente em coisas importantes e ainda assim passar.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — falha caracterizada por ≥1 serious false negative ocorrendo em mais de um briefing do estudo` (OD-5, decidido pela dona do projeto)
+**Locked before execution:** `YES`
 
 ---
 
@@ -363,8 +375,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** força micro-batch ou on-demand e escopo estreito desde o início; pode excluir modos que se tornariam viáveis com modelos mais baratos depois.
 **Consequence of looser threshold:** o gate de custo deixa de ser gate; o risco "cost explosion" da baseline §33 passa direto.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — US$ 3 por intervenção útil` (OD-6, decidido pela dona do projeto)
+**Locked before execution:** `YES`
 
 ---
 
@@ -382,8 +394,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** limita frequência de checkpoint e número de fontes; decisão de escopo tomada por orçamento, o que é legítimo se explícito.
 **Consequence of looser threshold:** viabilidade aparente que não se sustenta quando o escopo cresce para mais de um workstream.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — US$ 60/mês de custo operacional para a V0 avaliada` (OD-7, decidido pela dona do projeto)
+**Locked before execution:** `YES`
 
 ---
 
@@ -401,8 +413,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** elimina micro-batch em favor de streaming, que a baseline §26 considera não recomendado sem caso urgente provado — logo, um teto muito apertado força uma arquitetura que a baseline desaconselha.
 **Consequence of looser threshold:** briefings chegam tarde demais para serem acionáveis, produzindo `too_late` que aparecerá como falha de valor, não de latência.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — P95 checkpoint → briefing ≤ 5 minutos` (OD-8, decidido pela dona do projeto)
+**Locked before execution:** `YES`
 
 ---
 
@@ -425,8 +437,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold (mais dias):** custo mensal estimado maior; mais provável reprovar em D-02.
 **Consequence of looser threshold (menos dias):** custo mensal subestimado e falso GO econômico.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — 20 dias úteis por mês, registrado como suposição no experiment log`
+**Locked before execution:** `YES`
 
 ---
 
@@ -451,8 +463,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold (amostra maior):** melhor detecção de erros raros, custo manual alto num workstream secundário.
 **Consequence of looser threshold:** E não consegue distinguir "resolve bem" de "não foi testado o suficiente para falhar".
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — 20 objetos por categoria, ou todos se houver menos de 20; amostragem sistemática`
+**Locked before execution:** `YES`
 
 ---
 
@@ -470,8 +482,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** PIVOT de fontes mais cedo, provavelmente reduzindo a V0 a uma ou duas fontes com IDs compartilhados.
 **Consequence of looser threshold:** aprova um conjunto de fontes cujo estado depende de julgamento humano contínuo — o risco "entity resolution failure" da baseline §33.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — ≥80% de resolução determinística por categoria` (OD-9, decidido pela dona do projeto)
+**Locked before execution:** `YES`
 
 ---
 
@@ -494,8 +506,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** PIVOT de fontes quase garantido; pode eliminar fontes que seriam usáveis com revisão humana nos merges de alto impacto — que é, aliás, o que a baseline §12 já prescreve.
 **Consequence of looser threshold:** o sprint aprova fontes que produzirão estado errado de forma invisível, e nenhum workstream posterior detectaria isso.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — zero falso merge em decisions, commitments e artifacts; ≤1 em 20 objetos amostrados nas demais categorias`
+**Locked before execution:** `YES`
 
 ---
 
@@ -513,8 +525,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** menos fontes, escopo mais estreito, produto mais defensável.
 **Consequence of looser threshold:** custo humano oculto que não aparece no modelo de custo de D, porque D mede tokens, não horas.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — ≤15 minutos de correção manual por período avaliado` (OD-9, decidido pela dona do projeto)
+**Locked before execution:** `YES`
 
 ---
 
@@ -539,8 +551,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold (intervalo maior):** menos contaminação por memória, mais categorias classificadas como `context dependent`, sprint mais longo.
 **Consequence of looser threshold:** estabilidade aparente que é apenas consistência de memória — falso positivo para personalização, exatamente o risco "false personalization" da baseline §33.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — ≥14 dias entre a rodada 1 e a rodada 2`
+**Locked before execution:** `YES`
 
 ---
 
@@ -563,8 +575,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** mais categorias reportadas como não conclusivas por falta de histórico — resultado honesto, e sem consequência para a V0, já que F não decide sobre ela.
 **Consequence of looser threshold:** categorias declaradas estáveis por acaso, habilitando personalização sobre ruído.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — 8 pares por categoria; sem completar com pares construídos`
+**Locked before execution:** `YES`
 
 ---
 
@@ -587,8 +599,8 @@ Nenhuma decisão tipo B foi preenchida automaticamente.
 **Consequence of stricter threshold:** poucas ou nenhuma categoria elegível; consequência arquitetural é manter Core Learning sem Statistical Personalization — que a baseline já trata como resultado aceitável, não como falha.
 **Consequence of looser threshold:** personalização construída sobre categorias que não são estáveis, gerando correções recorrentes e perda de confiança.
 
-**Final value:** `PENDING`
-**Locked before execution:** `NO`
+**Final value:** `LOCKED — ≥7 de 8 (87,5%) para sufficiently stable; 5–6/8 com mudança de contexto registrada → context dependent; 5–6/8 sem mudança de contexto ou ≤4/8 → unstable / abstain`
+**Locked before execution:** `YES`
 
 ---
 
@@ -607,7 +619,7 @@ Oito dos nove thresholds abertos são **derivados**: eles reutilizam um número 
 **Reasoning:** o critério de kill deve ser o mesmo do GO, negado, aplicado à maioria dos casos e não a um briefing isolado (princípio 12: nenhum resultado individual é prova universal).
 **Consequence of stricter threshold:** STOP prematuro sobre variação normal entre checkpoints.
 **Consequence of looser threshold:** o kill criterion nunca dispara e o gate de valor deixa de existir.
-**Final value:** `PENDING` (resolve ao travar B-04) · **Locked:** `NO`
+**Final value:** `LOCKED — dispara quando menos de 75% dos briefings tiverem ≥1 item útil` (derivado de B-04) · **Locked:** `YES`
 
 ### K-2 — Janela de antecipação inexistente
 
@@ -618,7 +630,7 @@ Oito dos nove thresholds abertos são **derivados**: eles reutilizam um número 
 **Reasoning:** usar a mediana, e não o máximo, impede que um único caso excepcional de antecipação longa mascare a ausência sistemática de janela.
 **Consequence of stricter threshold:** PIVOT para on-demand mesmo havendo antecipação em uma classe específica de mudança.
 **Consequence of looser threshold:** a tese proativa sobrevive apoiada em casos isolados.
-**Final value:** `PENDING` (resolve ao travar A-02) · **Locked:** `NO`
+**Final value:** `LOCKED — dispara quando a mediana de anticipation_window, calculada só sobre hindsight_risk = low, fica abaixo de 1 intervalo de checkpoint` (derivado de A-02) · **Locked:** `YES`
 
 ### K-3 — Fonte depende majoritariamente de merge ambíguo
 
@@ -629,7 +641,7 @@ Oito dos nove thresholds abertos são **derivados**: eles reutilizam um número 
 **Reasoning:** o gate é por categoria, não global: uma média boa pode esconder uma categoria de alto impacto integralmente ambígua, e é justamente essa categoria que corrompe Change Records.
 **Consequence of stricter threshold:** PIVOT de fontes provável; a V0 pode ficar restrita a fonte única.
 **Consequence of looser threshold:** build sobre identidade não confiável, com erro invisível a jusante.
-**Final value:** `PENDING` (resolve ao travar E-02 e E-03) · **Locked:** `NO`
+**Final value:** `LOCKED — dispara quando a cobertura determinística fica abaixo de 80% em decisions, commitments ou artifacts, ou quando ocorre qualquer falso merge nessas categorias, ou quando o falso merge excede 1/20 nas demais` (derivado de E-02 e E-03) · **Locked:** `YES`
 
 ### K-4 — Custo por intervenção útil excede o limite
 
@@ -640,7 +652,7 @@ Oito dos nove thresholds abertos são **derivados**: eles reutilizam um número 
 **Reasoning:** exceder em streaming não é kill — a baseline §26 já desaconselha streaming. O kill só faz sentido quando nenhum modo cabe.
 **Consequence of stricter threshold:** STOP econômico por um modo ruim que já não era recomendado.
 **Consequence of looser threshold:** custo inviável sobrevive porque "algum escopo hipotético caberia".
-**Final value:** `PENDING` (resolve ao travar D-01) · **Locked:** `NO`
+**Final value:** `LOCKED — dispara quando cost/useful_intervention excede US$ 3 em todos os modos comparados, ou quando o custo mensal excede US$ 60 em todos os modos` (derivado de D-01 e D-02) · **Locked:** `YES`
 
 ### K-5 — Esforço de normalização manual alto e não decrescente
 
@@ -651,7 +663,7 @@ Oito dos nove thresholds abertos são **derivados**: eles reutilizam um número 
 **Reasoning:** o critério é conjunto por construção: esforço alto que cai indica aprendizado do processo; esforço alto e plano indica que o trabalho é irredutível. Nenhuma das duas condições sozinha é suficiente.
 **Consequence of stricter threshold:** reprova H-03 sobre uma série curta em que a tendência ainda não apareceria.
 **Consequence of looser threshold:** aprova fontes cuja manutenção manual seria o verdadeiro produto.
-**Final value:** `PENDING` (resolve ao travar B-06) · **Locked:** `NO`
+**Final value:** `LOCKED — dispara quando o esforço médio excede 30 min por checkpoint e não apresenta tendência de queda entre o primeiro e o último terço da série` (derivado de B-06) · **Locked:** `YES`
 
 ### K-6 — Aumento de itens irrelevantes ou "já sabia"
 
@@ -662,7 +674,7 @@ Oito dos nove thresholds abertos são **derivados**: eles reutilizam um número 
 **Reasoning:** mesma lógica de K-1: maioria, não caso isolado.
 **Consequence of stricter threshold:** força top-k mais apertado, o que aumenta falsos negativos medidos por B-07.
 **Consequence of looser threshold:** ruído crescente não dispara nada, e o risco da baseline §33 se materializa depois do build.
-**Final value:** `PENDING` (resolve ao travar B-05) · **Locked:** `NO`
+**Final value:** `LOCKED — dispara quando already_known + irrelevant excede 33% na maioria dos briefings` (derivado de B-05) · **Locked:** `YES`
 
 ### K-7 — Correção manual e "other" dominam a classificação de objetos
 
@@ -674,7 +686,7 @@ Oito dos nove thresholds abertos são **derivados**: eles reutilizam um número 
 **Alternatives:** 1/5 (mais rigoroso, provável falso alarme sobre casos legítimos de borda) · 1/3 *(recomendado)* · 1/2 (só dispara quando o schema já falhou por completo).
 **Consequence of stricter threshold:** revisão de schema desencadeada por casos de borda normais.
 **Consequence of looser threshold:** build sobre uma ontologia que não representa o trabalho, com correção manual permanente.
-**Final value:** `PENDING` · **Locked:** `NO`
+**Final value:** `LOCKED — dispara quando mais de 1/3 dos objetos registrados exigirem "other" ou reclassificação manual` · **Locked:** `YES`
 
 ### K-8 — Itens úteis só aparecem com `hindsight_risk = high`
 
@@ -685,7 +697,7 @@ Oito dos nove thresholds abertos são **derivados**: eles reutilizam um número 
 **Reasoning:** a segunda condição é a mais importante: ela testa se a conclusão de A sobrevive à exclusão dos itens contaminados. Se não sobrevive, o estudo mediu retrospectiva.
 **Consequence of stricter threshold:** A fica não conclusivo com frequência; o sprint termina sem responder H-02, o que é preferível a respondê-la errado.
 **Consequence of looser threshold:** GO baseado em detecção que só é possível sabendo o desfecho.
-**Final value:** `PENDING` (resolve ao travar A-01 e A-03) · **Locked:** `NO`
+**Final value:** `LOCKED — dispara quando A-03 é violado, ou quando remover os itens hindsight_risk = high faz o volume cair abaixo de 2 oportunidades acionáveis por semana` (derivado de A-01 e A-03) · **Locked:** `YES`
 
 ### K-9 — Percepção de vigilância
 
@@ -693,7 +705,7 @@ Oito dos nove thresholds abertos são **derivados**: eles reutilizam um número 
 **Type:** preservado como **qualitativo**, sem threshold numérico
 **Recommended decision:** `PROPOSED — manter sem número, conforme o protocolo §12`
 **Reasoning:** o sinal é a dona evitar fontes ou mudar comportamento por se sentir observada. Quantificar isso exigiria medir o comportamento que o próprio critério existe para proteger. A ação — reduzir escopo de fontes imediatamente — não depende de um limiar.
-**Final value:** `qualitativo, sem threshold` · **Locked:** `NO` (confirmar na trava)
+**Final value:** `LOCKED — qualitativo, sem threshold numérico; confirmado na trava` · **Locked:** `YES`
 
 ### K-10 — Serious false negatives com consequência real e recorrentes
 
@@ -704,7 +716,7 @@ Oito dos nove thresholds abertos são **derivados**: eles reutilizam um número 
 **Reasoning:** o critério da baseline exige "recorrentes". Um evento isolado grave merece registro e análise, mas não é evidência de falha sistemática do método.
 **Consequence of stricter threshold:** revisão de cobertura de fontes disparada por caso único.
 **Consequence of looser threshold:** falhas silenciosas repetidas não bloqueiam o GO.
-**Final value:** `PENDING` (resolve ao travar B-07) · **Locked:** `NO`
+**Final value:** `LOCKED — dispara quando ≥1 serious false negative ocorre em mais de um briefing` (derivado de B-07) · **Locked:** `YES`
 
 ---
 
@@ -716,47 +728,89 @@ Nenhum valor é inventado aqui. Estes cinco campos exigem seleção de contexto 
 
 **Protocol reference:** §2.2 · **Type:** C
 **Why this must be locked:** janela escolhida depois de ver conteúdo vira janela escolhida por resultado — o viés que o protocolo §2.2 proíbe explicitamente.
-**Value:** `OWNER DECISION REQUIRED`
-**Procedimento obrigatório:** aplicar o procedimento de seleção do protocolo §2.2 usando **apenas metadados**, com o critério de desempate já declarado (maior cobertura de fontes recuperáveis), e registrar a lista completa de candidatos eliminados com o motivo. Depende de S-01 estar travado.
-**Final value:** `PENDING` · **Locked:** `NO`
+**Locked value:** `6 semanas consecutivas de trabalho real`
+
+**Princípio de seleção travado:**
+- a janela **não** deve ser selecionada com base no conhecimento de que contém resultados favoráveis;
+- a janela exata deve ser **registrada antes** de analisar detalhadamente o conteúdo dos episódios;
+- aplicar o procedimento do protocolo §2.2 usando **apenas metadados**, com o critério de desempate já declarado (maior cobertura de fontes recuperáveis);
+- registrar a lista completa de candidatos eliminados, com o motivo.
+
+**Instanciação:** as datas concretas são registradas no primeiro passo da execução, sob o critério travado acima, antes de qualquer inspeção detalhada. Isso não é um pre-execution blocker: o critério que governa a escolha está travado.
+**Final value:** `LOCKED — critério: 6 semanas consecutivas de trabalho real; janela exata registrada antes da análise detalhada` · **Locked:** `YES`
 
 ### SC-02 — Selected workstream(s)
 
 **Protocol reference:** §2.2 · **Type:** C
 **Why this must be locked:** é a Open Question nº 1 da baseline §34 — qual workstream oferece sinal suficiente sem expor contexto excessivo. Escolher depois permite migrar para o workstream onde o resultado ficou melhor.
-**Value:** `OWNER DECISION REQUIRED`
-**Procedimento obrigatório:** aplicar os cinco critérios de elegibilidade do protocolo §2.2; se a primeira opção que vier à mente for "onde o sistema teria ajudado mais", registrar como risco de seleção conforme o protocolo exige.
-**Final value:** `PENDING` · **Locked:** `NO`
+**Locked value:** `exatamente 1 workstream`
+
+**Critério de seleção travado** — o workstream escolhido deve ter:
+- atividade frequente;
+- reuniões;
+- decisões;
+- artifacts/documentos;
+- mudanças de direção;
+- histórico recuperável.
+
+Aplicam-se também os cinco critérios de elegibilidade do protocolo §2.2. A escolha concreta deve ser feita **antes** da inspeção detalhada usada para produzir resultados. Se a primeira opção que vier à mente for "onde o sistema teria ajudado mais", registrar como risco de seleção conforme o protocolo exige.
+
+**Instanciação:** o workstream é nomeado no primeiro passo da execução, sob o critério travado acima. Não é pre-execution blocker.
+**Final value:** `LOCKED — critério: exatamente 1 workstream, escolhido pelos critérios acima antes da inspeção detalhada` · **Locked:** `YES`
 
 ### SC-03 — Fontes efetivamente usadas
 
 **Protocol reference:** §2.3 · **Type:** C
 **Why this must be locked:** é a Open Question nº 4 da baseline §34 e o insumo direto de E. Adicionar fontes durante a execução muda a régua de E-02 no meio do estudo.
-**Value:** `OWNER DECISION REQUIRED`
-**Restrições já fixadas pelo protocolo:** nenhuma integração técnica, nenhuma conexão de API ou export automatizado; mínimo de duas fontes distintas (requisito de E); Slack e e-mail apenas se já disponíveis para leitura manual; ACL e sensibilidade da fonte original respeitadas.
-**Final value:** `PENDING` · **Locked:** `NO`
+**Locked value:** `máximo de 3 classes de fonte`
+
+1. **Calendar**
+2. **Meeting notes / transcripts**
+3. **Documents / textual artifacts**
+
+**Regras travadas:**
+- nenhuma integração técnica é necessária; nenhuma conexão de API, OAuth ou export automatizado;
+- **Slack e e-mail não entram automaticamente**; sua necessidade pode emergir como resultado do sprint, e nesse caso é um achado a registrar, não uma adição durante a execução;
+- mínimo de duas fontes distintas (requisito de E) — satisfeito pelas três classes acima;
+- ACL e sensibilidade da fonte original respeitadas.
+**Final value:** `LOCKED — Calendar + Meeting notes/transcripts + Documents/textual artifacts; máximo 3 classes de fonte` · **Locked:** `YES`
 
 ### SC-04 — Terceiro disponível para cegamento parcial
 
 **Protocol reference:** §6 · **Type:** C
 **Why this must be locked:** determina o grau de cegamento real de B, que é a limitação mais séria do sprint. Descobrir na execução que não há terceiro transforma B em autoavaliação sem que isso tenha sido assumido antes.
-**Value:** `OWNER DECISION REQUIRED`
-**Reasoning:** a resposta pode ser legitimamente "não há". Nesse caso o cegamento fica restrito ao intervalo de B-03 e à randomização de ordem, e essa limitação deve ser declarada em todo resultado de B — não descoberta depois. Um terceiro, mesmo sem contexto do projeto, pode produzir a baseline cronológica ou aplicar a rotulagem, e qualquer uma das duas já melhora materialmente a validade de B.
-**Final value:** `PENDING` · **Locked:** `NO`
+**Locked value (regra condicional):**
+- se houver terceiro apropriado disponível: `YES`;
+- caso contrário: `NO — method blinding + delayed self-evaluation`.
+
+**A indisponibilidade de terceiro não bloqueia o Sprint 0.**
+
+**Reasoning:** a resposta pode ser legitimamente "não há". Nesse caso o cegamento fica restrito ao intervalo de B-03 (≥48h) e à randomização de ordem, e essa limitação deve ser declarada em todo resultado de B — não descoberta depois. Um terceiro, mesmo sem contexto do projeto, pode produzir a baseline cronológica ou aplicar a rotulagem, e qualquer uma das duas já melhora materialmente a validade de B.
+
+**Instanciação:** qual dos dois ramos vale é registrado no início da execução. Não é pre-execution blocker — ambos os ramos estão definidos.
+**Final value:** `LOCKED — YES se houver terceiro apropriado disponível; caso contrário NO — method blinding + delayed self-evaluation` · **Locked:** `YES`
 
 ### SC-05 — Categorias selecionadas em F
 
 **Protocol reference:** §10 · **Type:** C
 **Why this must be locked:** categorias escolhidas depois permitem reportar apenas as que se mostraram estáveis — seleção de desfecho, não descoberta.
-**Value:** `OWNER DECISION REQUIRED`
-**Procedimento obrigatório:** as categorias devem ser derivadas do trabalho real, declaradas antes da rodada 1, e **todas** devem ser reportadas ao final, inclusive as instáveis e as não conclusivas por falta de pares (F-02). Depende de SC-02 estar travado, já que as categorias vêm do workstream selecionado.
-**Final value:** `PENDING` · **Locked:** `NO`
+**Locked value:** `3 famílias candidatas`
+
+1. **Explore vs Converge**
+2. **Research/Benchmark vs Act with Current Evidence**
+3. **Artifact Quality / Format Choice**
+
+**Regras travadas:**
+- as **instâncias concretas** de cada par devem vir de decisões históricas reais (`alternatives_origin = real_history`);
+- estas categorias **não** devem ser transformadas em traços de personalidade — elas descrevem classes de escolha, não a pessoa, conforme baseline §20 e §28;
+- as três famílias são declaradas antes da rodada 1, e **todas** devem ser reportadas ao final, inclusive as instáveis e as não conclusivas por falta de pares (F-02).
+**Final value:** `LOCKED — 3 famílias: Explore vs Converge · Research/Benchmark vs Act with Current Evidence · Artifact Quality / Format Choice` · **Locked:** `YES`
 
 ---
 
 ## 9. Owner Decisions Required
 
-As decisões abaixo exigem julgamento da dona do AVA. Nenhuma foi preenchida. As opções são plausíveis e mutuamente exclusivas; a recomendação, quando existe, é metodológica e não substitui a escolha.
+**Estado: todas decididas e travadas em 2026-08-30.** As opções e recomendações abaixo ficam preservadas como registro histórico do momento da proposta — elas mostram o que estava sobre a mesa quando a escolha foi feita, e não foram reescritas depois. A escolha da dona do projeto aparece em **Locked** ao fim de cada decisão.
 
 ### OD-1 — Volume mínimo de oportunidades acionáveis por período (A-01)
 
@@ -767,6 +821,8 @@ As decisões abaixo exigem julgamento da dona do AVA. Nenhuma foi preenchida. As
 - **Option C — 2–3 por semana.** Meio-termo. Consequência: sustenta um checkpoint a cada 2–3 dias, mas não um diário; implicaria rever a cadência de checkpoint antes do build.
 
 **Recommendation:** Option C. Ela é falsificável (bem acima de zero), não exige valor diário — que seria uma aposta forte para um produto ainda não validado — e a consequência de falhar é um PIVOT de cadência, não um STOP. Option B é a mais honesta se a intenção for um produto de uso diário desde o início.
+
+**Locked:** `≥2 oportunidades acionáveis por semana` — coerente com a faixa da Option C.
 
 ---
 
@@ -780,6 +836,8 @@ As decisões abaixo exigem julgamento da dona do AVA. Nenhuma foi preenchida. As
 
 **Recommendation:** Option B. Um produto que pede atenção diária precisa acertar na maioria clara das vezes, mas exigir dois itens úteis por checkpoint impõe uma densidade que nem um assistente humano sustentaria.
 
+**Locked:** `≥1 item útil em ≥75% dos briefings` — Option B.
+
 ---
 
 ### OD-3 — Proporção máxima de `already_known` + `irrelevant` (B-05)
@@ -791,6 +849,8 @@ As decisões abaixo exigem julgamento da dona do AVA. Nenhuma foi preenchida. As
 - **Option C — até 20%.** Consequência: exige abstenção frequente e briefings curtos; aumenta falsos negativos medidos por B-07.
 
 **Recommendation:** Option B. Acima de um terço, o custo de atenção do ruído começa a competir com o valor dos itens úteis. Vale escolher esta em conjunto com OD-5, já que reduzir ruído e reduzir falsos negativos puxam em direções opostas.
+
+**Locked:** `already_known + irrelevant ≤ 33% dos itens promovidos` — Option B.
 
 ---
 
@@ -804,6 +864,8 @@ As decisões abaixo exigem julgamento da dona do AVA. Nenhuma foi preenchida. As
 
 **Recommendation:** Option B, com a ressalva já registrada em B-06: o teto absoluto importa menos que a **tendência**. Trinta minutos com queda consistente ao longo da série é um sinal melhor que quinze minutos estáveis.
 
+**Locked:** `≤30 minutos por checkpoint` — Option B. A avaliação de tendência permanece obrigatória via K-5.
+
 ---
 
 ### OD-5 — Serious false negatives que caracterizam falha (B-07)
@@ -815,6 +877,8 @@ As decisões abaixo exigem julgamento da dona do AVA. Nenhuma foi preenchida. As
 - **Option C — 2 ou mais por briefing.** Consequência: aceita perder itens importantes com regularidade; contradiz a promessa de "what you may not know yet".
 
 **Recommendation:** Option B. É a única que separa erro pontual de falha de método e a única compatível com um briefing limitado a 10 itens. Escolher junto com OD-3.
+
+**Locked:** `≥1 serious false negative em mais de um briefing do estudo` — Option B.
 
 ---
 
@@ -828,6 +892,8 @@ As decisões abaixo exigem julgamento da dona do AVA. Nenhuma foi preenchida. As
 
 **Recommendation:** Nenhuma. Este valor é uma preferência econômica pessoal e não tem base metodológica. **A única exigência é que o número seja escolhido e registrado antes do cálculo de D**, conforme o protocolo §8 — escolhê-lo depois invalida a decisão de custo do sprint inteiro.
 
+**Locked:** `US$ 3 por intervenção útil`. Registrado antes de qualquer cálculo de custo, conforme exigido pelo protocolo §8.
+
 ---
 
 ### OD-7 — Maximum acceptable cost per month (D-02)
@@ -839,6 +905,8 @@ As decisões abaixo exigem julgamento da dona do AVA. Nenhuma foi preenchida. As
 - **Option C — sem teto na V0, revisto depois da medição.** Consequência: **não recomendado** — anula o gate de custo, que a baseline §26 define como bloqueante antes da implementação.
 
 **Recommendation:** Escolher A ou B. Option C não é uma opção legítima dentro deste protocolo: ela transforma um gate bloqueante em observação.
+
+**Locked:** `US$ 60/mês` de custo operacional para a V0 avaliada. O gate de custo permanece bloqueante.
 
 ---
 
@@ -852,6 +920,8 @@ As decisões abaixo exigem julgamento da dona do AVA. Nenhuma foi preenchida. As
 
 **Recommendation:** Option B, se a intenção for testar a tese proativa. Option C é coerente, mas escolhê-la agora seria pré-decidir o PIVOT que o Workstream A existe para testar.
 
+**Locked:** `P95 checkpoint → briefing ≤ 5 minutos` — Option B (minutos), compatível com micro-batch e com o teste da tese proativa.
+
 ---
 
 ### OD-9 — Cobertura determinística mínima e tempo de correção manual (E-02 + E-04)
@@ -864,11 +934,13 @@ As decisões abaixo exigem julgamento da dona do AVA. Nenhuma foi preenchida. As
 
 **Recommendation:** Option A ou B, nunca C. A escolha entre A e B depende de quanta manutenção manual recorrente é aceitável; ambas preservam o gate. Vale notar que um resultado ruim aqui **não** mata o produto — ele muda as fontes (PIVOT de fontes, protocolo §11).
 
+**Locked:** `≥80% de resolução determinística` e `≤15 minutos de correção manual por período avaliado` — Option A. Resultado ruim aqui muda as fontes, não o produto.
+
 ---
 
 ## 10. Methodological Defaults
 
-Decisões de desenho experimental com recomendação suficientemente defensável. Todas ficam `PROPOSED`, nunca `LOCKED` automaticamente. A dona pode aceitar ou alterar qualquer uma antes da execução.
+Decisões de desenho experimental com recomendação defensável. **Todas foram aceitas pela dona do projeto em 2026-08-30 e estão `LOCKED`.** Os valores abaixo são exatamente os que haviam sido propostos — nenhum foi reinventado ou reescrito na trava.
 
 | ID | Decisão | Valor proposto | Base |
 | --- | --- | --- | --- |
@@ -889,7 +961,26 @@ Decisões de desenho experimental com recomendação suficientemente defensável
 | K-7 | Teto de "other"/reclassificação | >1/3 dos objetos | detecta ontologia inadequada antes do build |
 | K-9 | Percepção de vigilância | manter qualitativo | quantificar exigiria medir o que o critério protege |
 
-**Derivados (resolvem automaticamente ao travar a decisão-mãe):** A-02 ← cadência de checkpoint · B-02 ← B-01 · K-1 ← B-04 · K-2 ← A-02 · K-3 ← E-02+E-03 · K-4 ← D-01 · K-5 ← B-06 · K-6 ← B-05 · K-8 ← A-01+A-03 · K-10 ← B-07.
+Todos os 16 defaults acima: `LOCKED`.
+
+### Derivados resolvidos
+
+Os thresholds tipo D foram resolvidos a partir das decisões-mãe agora travadas. Nenhum threshold independente novo foi criado.
+
+| ID | Deriva de | Valor resolvido |
+| --- | --- | --- |
+| A-02 | cadência de checkpoint | ≥1 intervalo de checkpoint |
+| B-02 | B-01 (3/bloco) | 10 itens no briefing |
+| K-1 | B-04 | <75% dos briefings com ≥1 item útil |
+| K-2 | A-02 | mediana (só `low`) < 1 intervalo de checkpoint |
+| K-3 | E-02 + E-03 | <80% determinístico em categoria de alto impacto, ou qualquer falso merge nelas, ou >1/20 nas demais |
+| K-4 | D-01 + D-02 | > US$ 3/intervenção útil em todos os modos, ou > US$ 60/mês em todos os modos |
+| K-5 | B-06 | >30 min médios sem tendência de queda |
+| K-6 | B-05 | >33% na maioria dos briefings |
+| K-8 | A-01 + A-03 | A-03 violado, ou volume <2/semana ao remover os `high` |
+| K-10 | B-07 | ≥1 serious false negative em mais de um briefing |
+
+Todos: `LOCKED`.
 
 ### Nota sobre calibragem
 
@@ -899,93 +990,124 @@ Estes valores não foram escolhidos para o produto passar nem para reprová-lo. 
 
 ## 11. Decision Lock Table
 
-`PENDING` = aguarda decisão · `PROPOSED` = recomendação metodológica aguardando aceite · `LOCKED` = travada antes da execução
+```text
+Status: LOCKED
+Lock date: 2026-08-30
+Architecture baseline: Architecture Package v0.2 Final
+Architecture tag: architecture-v0.2-final
+Validation protocol version: Validation Sprint 0 Protocol v0.1
+Lock commit: docs(validation): lock Sprint 0 pre-execution criteria (branch main)
+```
+
+> These criteria were locked before experimental work data was inspected. Changes after execution starts require explicit protocol deviation and cannot retroactively alter the original GO/PIVOT/STOP evaluation.
 
 ### Scope
 
 | ID | Decision | Value | Status |
 | --- | --- | --- | --- |
-| S-01 | Tamanho da janela histórica | 6 semanas | PROPOSED |
-| S-02 | Episódios alvo em A | ≥12 | PROPOSED |
-| S-03 | Checkpoints/briefings em B | 8 pares | PROPOSED |
+| S-01 | Tamanho da janela histórica | 6 semanas consecutivas | LOCKED |
+| S-02 | Episódios alvo em A | ≥12; parar no alvo | LOCKED |
+| S-03 | Checkpoints/briefings em B | 8 pares, sem parada antecipada | LOCKED |
 
 ### Workstream A
 
 | ID | Decision | Value | Status |
 | --- | --- | --- | --- |
-| A-01 | Volume mínimo de oportunidades acionáveis (GO) | — | PENDING (OD-1) |
-| A-02 | Janela mínima de antecipação | ≥1 intervalo de checkpoint | PROPOSED (derivado) |
-| A-03 | Teto de `hindsight_risk = high` | só `low` nas métricas; não conclusivo se >1/3 | PROPOSED |
+| A-01 | Volume mínimo de oportunidades acionáveis (GO) | ≥2 por semana | LOCKED (OD-1) |
+| A-02 | Janela mínima de antecipação | ≥1 intervalo de checkpoint | LOCKED (derivado) |
+| A-03 | Teto de `hindsight_risk = high` | métricas só sobre `low`; não conclusivo se >1/3 for `high` | LOCKED |
 
 ### Workstream B
 
 | ID | Decision | Value | Status |
 | --- | --- | --- | --- |
-| B-01 | Itens máximos por bloco | 3 | PROPOSED |
-| B-02 | Itens máximos no briefing | 10 | PROPOSED (derivado) |
-| B-03 | Intervalo produção → avaliação | ≥48h | PROPOSED |
-| B-04 | Frequência mínima de itens úteis (GO) | — | PENDING (OD-2) |
-| B-05 | Teto de `already_known` + `irrelevant` | — | PENDING (OD-3) |
-| B-06 | Teto de manual normalization effort | — | PENDING (OD-4) |
-| B-07 | Serious false negatives que caracterizam falha | — | PENDING (OD-5) |
+| B-01 | Itens máximos por bloco | 3 | LOCKED |
+| B-02 | Itens máximos no briefing | 10 | LOCKED (derivado) |
+| B-03 | Intervalo produção → avaliação | ≥48h | LOCKED |
+| B-04 | Frequência mínima de itens úteis (GO) | ≥1 item útil em ≥75% dos briefings | LOCKED (OD-2) |
+| B-05 | Teto de `already_known` + `irrelevant` | ≤33% dos itens promovidos | LOCKED (OD-3) |
+| B-06 | Teto de manual normalization effort | ≤30 min por checkpoint | LOCKED (OD-4) |
+| B-07 | Serious false negatives que caracterizam falha | ≥1 em mais de um briefing | LOCKED (OD-5) |
 
 ### Workstream D
 
 | ID | Decision | Value | Status |
 | --- | --- | --- | --- |
-| D-01 | Max cost per useful intervention | — | PENDING (OD-6) |
-| D-02 | Max cost per month | — | PENDING (OD-7) |
-| D-03 | Max latency P95 checkpoint → briefing | — | PENDING (OD-8) |
-| D-04 | Assumed operating days per month | 20 | PROPOSED |
+| D-01 | Max cost per useful intervention | US$ 3 | LOCKED (OD-6) |
+| D-02 | Max cost per month | US$ 60/mês | LOCKED (OD-7) |
+| D-03 | Max latency P95 checkpoint → briefing | 5 minutos | LOCKED (OD-8) |
+| D-04 | Assumed operating days per month | 20 dias úteis | LOCKED |
 
 ### Workstream E
 
 | ID | Decision | Value | Status |
 | --- | --- | --- | --- |
-| E-01 | Amostra por categoria | 20 ou todos; sistemática | PROPOSED |
-| E-02 | Cobertura determinística mínima | — | PENDING (OD-9) |
-| E-03 | Teto de falso merge | 0 em alto impacto; ≤1/20 nas demais | PROPOSED |
-| E-04 | Tempo máximo de correção manual | — | PENDING (OD-9) |
+| E-01 | Amostra por categoria | 20 ou todos se <20; sistemática | LOCKED |
+| E-02 | Cobertura determinística mínima | ≥80% por categoria | LOCKED (OD-9) |
+| E-03 | Teto de falso merge | 0 em decisions/commitments/artifacts; ≤1/20 nas demais | LOCKED |
+| E-04 | Tempo máximo de correção manual | ≤15 min por período avaliado | LOCKED (OD-9) |
 
 ### Workstream F
 
 | ID | Decision | Value | Status |
 | --- | --- | --- | --- |
-| F-01 | Intervalo entre avaliações | ≥14 dias | PROPOSED |
-| F-02 | Pares mínimos por categoria | 8 | PROPOSED |
-| F-03 | Auto-concordância `sufficiently stable` | ≥7/8 | PROPOSED |
+| F-01 | Intervalo entre avaliações | ≥14 dias | LOCKED |
+| F-02 | Pares mínimos por categoria | 8; sem pares construídos | LOCKED |
+| F-03 | Auto-concordância `sufficiently stable` | ≥7/8 (87,5%) | LOCKED |
 
 ### Kill criteria
 
 | ID | Decision | Value | Status |
 | --- | --- | --- | --- |
-| K-1 | Pouco conteúdo novo e acionável | < B-04 na maioria dos briefings | PROPOSED (derivado) |
-| K-2 | Janela de antecipação inexistente | mediana (só `low`) < A-02 | PROPOSED (derivado) |
-| K-3 | Merge ambíguo domina | < E-02 em categoria de alto impacto, ou E-03 violado | PROPOSED (derivado) |
-| K-4 | Custo excede o limite | > D-01 em todos os modos | PROPOSED (derivado) |
-| K-5 | Esforço manual alto e não decrescente | > B-06 sem tendência de queda | PROPOSED (derivado) |
-| K-6 | Ruído crescente | > B-05 na maioria dos briefings | PROPOSED (derivado) |
-| K-7 | "other"/reclassificação domina | > 1/3 dos objetos | PROPOSED |
-| K-8 | Utilidade só com hindsight | A-03 violado, ou volume cai abaixo de A-01 sem os `high` | PROPOSED (derivado) |
-| K-9 | Percepção de vigilância | qualitativo, sem threshold | PROPOSED |
-| K-10 | Serious false negatives recorrentes | ≥ B-07 em mais de um briefing | PROPOSED (derivado) |
+| K-1 | Pouco conteúdo novo e acionável | <75% dos briefings com ≥1 item útil | LOCKED (← B-04) |
+| K-2 | Janela de antecipação inexistente | mediana (só `low`) < 1 intervalo de checkpoint | LOCKED (← A-02) |
+| K-3 | Merge ambíguo domina | <80% determinístico em categoria de alto impacto, ou qualquer falso merge nelas, ou >1/20 nas demais | LOCKED (← E-02+E-03) |
+| K-4 | Custo excede o limite | > US$ 3/intervenção útil em todos os modos, ou > US$ 60/mês em todos os modos | LOCKED (← D-01+D-02) |
+| K-5 | Esforço manual alto e não decrescente | >30 min médios sem tendência de queda | LOCKED (← B-06) |
+| K-6 | Ruído crescente | >33% na maioria dos briefings | LOCKED (← B-05) |
+| K-7 | "other"/reclassificação domina | >1/3 dos objetos | LOCKED |
+| K-8 | Utilidade só com hindsight | A-03 violado, ou volume <2/semana ao remover os `high` | LOCKED (← A-01+A-03) |
+| K-9 | Percepção de vigilância | qualitativo, sem threshold | LOCKED (qualitativo) |
+| K-10 | Serious false negatives recorrentes | ≥1 em mais de um briefing | LOCKED (← B-07) |
 
 ### Scope selections
 
 | ID | Decision | Value | Status |
 | --- | --- | --- | --- |
-| SC-01 | Selected window | — | PENDING (owner) |
-| SC-02 | Selected workstream(s) | — | PENDING (owner) |
-| SC-03 | Fontes efetivamente usadas | — | PENDING (owner) |
-| SC-04 | Terceiro para cegamento parcial | — | PENDING (owner) |
-| SC-05 | Categorias selecionadas em F | — | PENDING (owner) |
+| SC-01 | Selected window | 6 semanas consecutivas; janela exata registrada antes da análise detalhada; não selecionada por conhecer resultado favorável | LOCKED (critério) |
+| SC-02 | Selected workstream(s) | exatamente 1; critérios: atividade frequente, reuniões, decisões, artifacts/documentos, mudanças de direção, histórico recuperável | LOCKED (critério) |
+| SC-03 | Fontes efetivamente usadas | Calendar · Meeting notes/transcripts · Documents/textual artifacts (máx. 3 classes); Slack/e-mail não entram automaticamente | LOCKED |
+| SC-04 | Terceiro para cegamento parcial | `YES` se houver terceiro apropriado; caso contrário `NO — method blinding + delayed self-evaluation` | LOCKED (regra condicional) |
+| SC-05 | Categorias selecionadas em F | Explore vs Converge · Research/Benchmark vs Act with Current Evidence · Artifact Quality / Format Choice | LOCKED |
 
-### Regra de bloqueio
+### Estado do lock
 
-**Enquanto qualquer decisão obrigatória permanecer `PENDING` ou `PROPOSED`, o Validation Sprint 0 permanece `NOT STARTED`.**
+**39 linhas: 38 decisões obrigatórias do protocolo (33 `DECISION REQUIRED` + 5 `TO BE FILLED`) mais K-9, preservado como qualitativo.**
 
-Uma decisão só passa a `LOCKED` quando a dona do projeto a aceita ou altera explicitamente. Toda decisão travada é copiada para o campo `predefined_criteria` do experiment log (protocolo §15) **antes** de iniciar cada experimento. Alteração posterior é `deviation`, não atualização — e a decisão associada perde validade.
+| Status | Quantidade |
+| --- | --- |
+| `LOCKED` | 39 |
+| `PROPOSED` | 0 |
+| `PENDING` | 0 |
 
-**Estado atual:** 0 `LOCKED` · 24 `PROPOSED` · 15 `PENDING` · **Sprint 0 NOT STARTED**
+**Pre-execution blockers: NONE.**
 
-A tabela tem 39 linhas: os 38 campos abertos do protocolo (33 `DECISION REQUIRED` + 5 `TO BE FILLED`) mais K-9, incluído para registrar explicitamente que ele permanece qualitativo e sem threshold.
+### Campos com instanciação no início da execução
+
+Três itens têm o **critério travado** e a **instância concreta** registrada no primeiro passo da execução, antes de qualquer inspeção detalhada. Eles não são pre-execution blockers — o que governa a escolha já está fixado — e também não são runtime observations, porque devem ser registrados **antes** da análise, não derivados dela.
+
+| ID | Critério travado | Instância a registrar no início da execução |
+| --- | --- | --- |
+| SC-01 | 6 semanas consecutivas, seleção por metadados, sem conhecer resultado favorável | datas exatas da janela |
+| SC-02 | exatamente 1 workstream, pelos seis critérios travados | nome do workstream escolhido |
+| SC-04 | regra condicional YES/NO já definida nos dois ramos | qual ramo se aplica |
+
+Nenhum outro campo depende de observar dados experimentais. Nenhum valor foi inventado para fechar o lock.
+
+### Regra de imutabilidade
+
+Toda decisão travada é copiada para o campo `predefined_criteria` do experiment log (protocolo §15) **antes** de iniciar cada experimento.
+
+Alteração posterior ao início da execução é **protocol deviation** registrada, nunca atualização silenciosa, e **não recalcula retroativamente** nenhuma avaliação GO/PIVOT/STOP já produzida sob os critérios originais.
+
+**Sprint 0: READY TO START · NOT STARTED.**
