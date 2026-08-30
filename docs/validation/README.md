@@ -4,16 +4,16 @@
 # Validation
 
 Current phase:
-Validation Sprint 0 — protocol ready
+Validation Sprint 0 — blocked before start
 
 Current gate:
-SPRINT 0 READY TO START
+PROVIDE WORK DATA ACCESS FOR SPRINT 0
 
 Status:
 PRE-EXECUTION DECISIONS LOCKED
 
 Sprint execution:
-NOT STARTED
+NOT STARTED — BLOCKED (see deviation D-001)
 
 Protocol:
 validation-sprint-0-protocol-v0.1.md
@@ -27,6 +27,7 @@ Architecture baseline:
 
 - **Protocol:** [Validation Sprint 0 Protocol v0.1](validation-sprint-0-protocol-v0.1.md) — `READY FOR EXECUTION`
 - **Decision pack:** [Pre-Execution Decisions v0.1](pre-execution-decisions-v0.1.md) — `LOCKED` em 2026-08-30
+- **Experiment log:** [sprint-0-experiment-log.md](observations/sprint-0-experiment-log.md) — `BLOCKED — AWAITING WORK DATA ACCESS`
 - **Architecture baseline:** [Architecture Package v0.2 Final](../architecture/architecture-package-v0.2-final.md) — tag `architecture-v0.2-final`
 
 ## Workstreams
@@ -44,6 +45,14 @@ Definidos pela arquitetura (seção *Validation Sprint 0* da baseline) e detalha
 
 Nenhum experimento foi executado. Nenhum resultado foi registrado.
 
+### Por que nenhum workstream iniciou
+
+O procedimento de seleção do protocolo (§2.2) exige listar workstreams candidatos a partir de metadados de fontes reais recuperáveis, e o §2.3 exige que essas fontes sejam consultadas manualmente, sem integração técnica. Nenhum material de trabalho foi disponibilizado ao operador do sprint, e portanto não existe conjunto de candidatos sobre o qual aplicar os critérios de elegibilidade.
+
+Registrado como desvio **D-001** no [experiment log](observations/sprint-0-experiment-log.md), com as três opções de desbloqueio. Nada foi inventado para preencher SC-01, SC-02 ou SC-04.
+
+Isto **não** é um resultado sobre o produto: H-01, H-02, H-03 e H-05 permanecem não testadas. Ausência de acesso não é evidência a favor nem contra nenhuma hipótese.
+
 ## Estrutura
 
 | Diretório | Propósito |
@@ -52,7 +61,7 @@ Nenhum experimento foi executado. Nenhum resultado foi registrado.
 | [observations/](observations/README.md) | registros brutos por experimento |
 | [results/](results/README.md) | experiment logs, análises e decisões |
 
-Todos vazios. Nenhum dado real existe.
+`datasets/` e `results/` vazios. `observations/` contém apenas o experiment log. Nenhum dado de trabalho real existe no repositório.
 
 ## Gate atual — Sprint 0 ready to start
 
@@ -84,4 +93,4 @@ Alteração de qualquer critério após o início da execução é **protocol de
 
 ## Próximo gate
 
-Iniciar o Validation Sprint 0.
+Disponibilizar acesso a fonte de trabalho real para o Sprint 0.
