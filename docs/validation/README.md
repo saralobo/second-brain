@@ -6,17 +6,27 @@
 Current phase:
 Validation Sprint 0 — protocol ready
 
+Current gate:
+PRE-EXECUTION DECISIONS
+
 Status:
+PENDING DECISION LOCK
+
+Sprint execution:
 NOT STARTED
 
 Protocol:
 validation-sprint-0-protocol-v0.1.md
+
+Decision pack:
+pre-execution-decisions-v0.1.md
 
 Architecture baseline:
 ../architecture/architecture-package-v0.2-final.md
 ```
 
 - **Protocol:** [Validation Sprint 0 Protocol v0.1](validation-sprint-0-protocol-v0.1.md) — `READY FOR EXECUTION`
+- **Decision pack:** [Pre-Execution Decisions v0.1](pre-execution-decisions-v0.1.md) — `PENDING DECISION LOCK`
 - **Architecture baseline:** [Architecture Package v0.2 Final](../architecture/architecture-package-v0.2-final.md) — tag `architecture-v0.2-final`
 
 ## Workstreams
@@ -44,12 +54,20 @@ Nenhum experimento foi executado. Nenhum resultado foi registrado.
 
 Todos vazios. Nenhum dado real existe.
 
-## Regra de critérios
+## Gate atual — Pre-execution decisions
 
-Os critérios **GO / PIVOT / STOP** devem ser definidos **antes** da observação dos resultados, e estão registrados no protocolo. Critérios definidos ou ajustados depois de ver os dados não são válidos para decidir avanço, ajuste ou parada.
+Os critérios **GO / PIVOT / STOP** devem ser definidos **antes** da observação dos resultados. Critérios definidos ou ajustados depois de ver os dados não são válidos para decidir avanço, ajuste ou parada.
 
-Os limiares numéricos ainda não escolhidos estão marcados no protocolo como `DECISION REQUIRED BEFORE EXECUTION`. Eles precisam ser resolvidos pela dona do projeto antes de qualquer execução.
+O [decision pack](pre-execution-decisions-v0.1.md) cobre os 38 campos abertos do protocolo (33 `DECISION REQUIRED BEFORE EXECUTION` + 5 `TO BE FILLED BEFORE EXECUTION`).
+
+| Status | Quantidade |
+| --- | --- |
+| `LOCKED` | 0 |
+| `PROPOSED` — recomendação metodológica aguardando aceite | 24 |
+| `PENDING` — exige julgamento da dona do projeto | 15 |
+
+**Enquanto qualquer decisão obrigatória permanecer `PENDING` ou `PROPOSED`, o Validation Sprint 0 permanece `NOT STARTED`.**
 
 ## Próximo gate
 
-Resolver as decisões pré-execução e iniciar o Validation Sprint 0.
+Travar todas as decisões pré-execução.
