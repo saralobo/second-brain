@@ -1,7 +1,7 @@
 # Sprint 0 — Experiment Log
 
 ```text
-Status: BLOCKED — AWAITING WORK DATA ACCESS
+Status: BLOCKED — CANDIDATE SOURCE FAILED ELIGIBILITY
 Architecture baseline: Architecture Package v0.2 Final
 Architecture tag: architecture-v0.2-final
 Protocol version: Validation Sprint 0 Protocol v0.1
@@ -11,6 +11,7 @@ Log opened: 2026-08-30
 Sprint start date: NOT SET — sprint not started
 Sprint execution: NOT STARTED
 Deviations: 1 (D-001, blocking)
+Candidates assessed: 1 (C-001 — Vytta/valeria)
 ```
 
 > All experiment criteria were locked before inspection of the selected work data.
@@ -103,3 +104,83 @@ O operador não escolheu entre elas e não acessou nenhuma fonte.
 | Fontes de trabalho real | nenhuma aberta, lida ou analisada |
 | Itens contaminados por hindsight em métrica primária | nenhum — não há métrica |
 | Verdict | nenhum — não permitido metodologicamente |
+
+
+---
+
+## 6. Avaliação de candidato C-001 — Vytta (`~/Documents/valeria`)
+
+**Data da avaliação:** 2026-08-30
+**Fonte dos metadados:** listagem de sistema de arquivos e histórico git. **Nenhum conteúdo de documento foi aberto ou lido.**
+
+Declaração da dona do projeto, registrada como fornecida:
+
+| Atributo declarado | Valor |
+| --- | --- |
+| Período aproximado | julho de 2026 |
+| Reuniões | ~2 por semana |
+| Calendário | não |
+| Atas / transcrições | não |
+| Documentos | sim |
+| Decisões registradas | muitas |
+| Mudanças de direção | médias |
+| Histórico recuperável | sim |
+
+### 6.1 Metadados observados
+
+| Observação | Valor |
+| --- | --- |
+| Arquivos totais no diretório | 86.984 (maioria artefatos de build) |
+| Documentos textuais e visuais relevantes | ~3.245 |
+| `mtime` = `birthtime` = **2026-07-13 13:35** | 3.134 arquivos (96,6%) |
+| Demais datas | 2026-07-18 (72), 2026-07-06 (26), 2026-07-07 (7), 2026-07-05 (5), 2026-06-24 (1) |
+| Repositório git em `plugin/` | 1 commit único, `2026-07-15`, "Initial commit" |
+| Outros repositórios versionados | nenhum |
+
+### 6.2 Interpretação
+
+O colapso de 96,6% dos arquivos em um único instante de criação **e** modificação é assinatura de uma cópia em massa do diretório, não de trabalho real concentrado. O trabalho descrito ocorreu; o que se perdeu foi o **registro temporal** dele. O commit único em `plugin/` confirma o padrão: o material foi versionado uma vez, já pronto, sem histórico incremental.
+
+Consequência: não existe `first_detectable_at` recuperável para nenhuma mudança, e não é possível reconstruir "o que estava disponível até o cutoff" para nenhum episódio.
+
+### 6.3 Critérios de elegibilidade (protocolo §2.2)
+
+| Critério | Resultado | Base |
+| --- | --- | --- |
+| Atividade suficiente: >1 evento por unidade de checkpoint na maior parte da janela | **FAIL** | eventos não são datáveis; não há como contar por checkpoint |
+| Decisões e mudanças observáveis no período | **FAIL** | decisões existem como conteúdo, mas não como eventos datados; "observável no período" não é verificável |
+| Fontes do período continuam recuperáveis e legíveis hoje | PASS | conteúdo íntegro e legível |
+| Representa trabalho real, não projeto de demonstração | PASS | projeto real da dona |
+| Pelo menos duas fontes distintas (requisito de Workstream E) | **FAIL** | apenas `documents`; sem calendar e sem atas/transcrições, por declaração da própria dona |
+
+**Resultado: C-001 é INELEGÍVEL.** Falha em três dos cinco critérios travados.
+
+### 6.4 Incompatibilidade adicional com SC-01
+
+SC-01 trava a janela em **6 semanas consecutivas**. O período declarado (julho de 2026) tem ~4,4 semanas. Mesmo que a temporalidade fosse recuperável, a janela declarada não sustenta o escopo travado.
+
+### 6.5 Por que não executei mesmo assim
+
+Sem timestamps, **todo** episódio do Workstream A seria classificado `hindsight_risk = high`. O Decision Lock estabelece que o estudo é inconclusivo se mais de 1/3 dos candidatos relevantes forem `high` — aqui seriam 100%, antes de olhar qualquer conteúdo. O resultado é conhecido de antemão: `INCONCLUSIVE`. Executar produziria trabalho sem poder informativo e criaria risco real de falso positivo, porque eu estaria gerando "oportunidades" a partir de material que já contém o desfecho, sem nenhum controle de corte temporal disponível.
+
+O mesmo raciocínio elimina B (checkpoints exigem cortes datados) e, por dependência de volume, D. E falha pelo requisito de duas fontes.
+
+### 6.6 Efeito sobre as hipóteses
+
+**Nenhum.** H-01, H-02, H-03 e H-05 permanecem não testadas.
+
+Registro explícito para evitar leitura equivocada futura: a perda de timestamps é artefato de uma operação de cópia de arquivos, **não** propriedade do trabalho da dona nem das fontes que o produto pretende usar. Tratar isto como evidência contra H-03 ("fontes limitadas permitem reconstruir estado e delta") seria erro de atribuição — a limitação está na cópia disponibilizada, não na fonte original.
+
+### 6.7 Workstream C sob este candidato
+
+C é o único workstream que **não depende de temporalidade**. O material contém artefatos que aparentam ser declarações explícitas de princípios, critérios e proibições autorais (`principios.md`, `tom-de-voz.md`, `pilares-da-marca.md`, entre outros, por nome de arquivo).
+
+Não foi executado. Dois motivos: (a) o §8 exige capturar apenas o que for explicitamente declarado **e confirmado**, e a confirmação depende da dona; (b) nenhum conteúdo foi aberto nesta avaliação, e abrir para bootstrap é decisão dela. C permanece `NOT STARTED` e disponível.
+
+### 6.8 Caminhos possíveis — decisão da dona do projeto
+
+Nenhum foi assumido. Os dois primeiros preservam os critérios travados; o terceiro não.
+
+1. **Localizar uma fonte com temporalidade preservada** para o mesmo projeto: a pasta original anterior à cópia, histórico de versões do Figma, histórico de versões do Google Drive, ou logs de sessão datados da ferramenta usada no projeto. Qualquer uma restauraria `first_detectable_at` e tornaria A e B viáveis. Tentei verificar a existência de logs de sessão datados para este projeto e a ação foi bloqueada pelo controle de permissões desta sessão; requer autorização explícita sua.
+2. **Avaliar outro workstream** que tenha calendário ou atas, satisfazendo o requisito de duas fontes e a janela de 6 semanas.
+3. **Alterar o escopo travado** — reduzir a janela, aceitar fonte única, ou aceitar o estudo de A como declaradamente inconclusivo. Isto é *protocol deviation* formal, exige registro e reduz o que o sprint pode concluir. Não é decisão do operador.

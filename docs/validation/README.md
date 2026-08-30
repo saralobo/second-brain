@@ -7,7 +7,7 @@ Current phase:
 Validation Sprint 0 — blocked before start
 
 Current gate:
-PROVIDE WORK DATA ACCESS FOR SPRINT 0
+PROVIDE ELIGIBLE WORK SOURCE FOR SPRINT 0
 
 Status:
 PRE-EXECUTION DECISIONS LOCKED
@@ -27,7 +27,7 @@ Architecture baseline:
 
 - **Protocol:** [Validation Sprint 0 Protocol v0.1](validation-sprint-0-protocol-v0.1.md) — `READY FOR EXECUTION`
 - **Decision pack:** [Pre-Execution Decisions v0.1](pre-execution-decisions-v0.1.md) — `LOCKED` em 2026-08-30
-- **Experiment log:** [sprint-0-experiment-log.md](observations/sprint-0-experiment-log.md) — `BLOCKED — AWAITING WORK DATA ACCESS`
+- **Experiment log:** [sprint-0-experiment-log.md](observations/sprint-0-experiment-log.md) — `BLOCKED — CANDIDATE SOURCE FAILED ELIGIBILITY`
 - **Architecture baseline:** [Architecture Package v0.2 Final](../architecture/architecture-package-v0.2-final.md) — tag `architecture-v0.2-final`
 
 ## Workstreams
@@ -48,6 +48,8 @@ Nenhum experimento foi executado. Nenhum resultado foi registrado.
 ### Por que nenhum workstream iniciou
 
 O procedimento de seleção do protocolo (§2.2) exige listar workstreams candidatos a partir de metadados de fontes reais recuperáveis, e o §2.3 exige que essas fontes sejam consultadas manualmente, sem integração técnica. Nenhum material de trabalho foi disponibilizado ao operador do sprint, e portanto não existe conjunto de candidatos sobre o qual aplicar os critérios de elegibilidade.
+
+O primeiro candidato avaliado (C-001 — projeto Vytta, `~/Documents/valeria`) foi julgado **inelegível** por metadados: 96,6% dos arquivos têm data de criação e modificação idênticas em um único instante, assinatura de cópia em massa que destruiu a temporalidade. Falha em 3 dos 5 critérios de elegibilidade e não sustenta a janela de 6 semanas de SC-01. Avaliação completa no §6 do experiment log. Nenhum conteúdo foi aberto.
 
 Registrado como desvio **D-001** no [experiment log](observations/sprint-0-experiment-log.md), com as três opções de desbloqueio. Nada foi inventado para preencher SC-01, SC-02 ou SC-04.
 
