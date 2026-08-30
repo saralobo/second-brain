@@ -1,13 +1,14 @@
 # AVA Technical V0 Specification v0.1
 
 ```text
-Status: DRAFT FOR IMPLEMENTATION PLANNING
+Status: READY FOR IMPLEMENTATION PLANNING
 Date: 2026-08-30
 Architecture baseline: Architecture Package v0.2 Final
 Architecture tag: architecture-v0.2-final
 Validation strategy: Prospective Instrumented Validation v0.1
 Hypotheses status: NOT TESTED
 Code implemented: NONE
+Blocking questions: NONE (resolved by ADR-21, ADR-22)
 ```
 
 > Translate the frozen architecture into the smallest technically coherent V0 capable of being used manually and generating evidence for prospective validation.
@@ -1135,7 +1136,7 @@ Adaptada ao repositório existente, que hoje é documental. **Nada existente é 
 /docs                    já existe — arquitetura, validação, decisões, specification
   /architecture          congelado
   /validation            protocolo, decision lock, estratégia prospectiva, observations
-  /decisions             ADRs — próximo ID: ADR-21
+  /decisions             ADRs pós-freeze — ADR-21, ADR-22; próximo ID: ADR-23
   /specification         esta especificação
 /apps
   /web                   Next.js — as sete superfícies
@@ -1218,14 +1219,27 @@ O critério 14 é o que distingue esta V0 de um assistente comum, e é o mais f�
 
 Somente questões que afetam o Implementation Plan. Decisões já congeladas na baseline **não** são reabertas.
 
-### BLOCKING
+### BLOCKING BEFORE IMPLEMENTATION PLAN
 
-**OQ-B1 — O gate de custo da baseline §26 não pode ser fechado como especificado.**
-A baseline declara o modelo de Cost & Latency um **gate bloqueante antes da implementação**, alimentado por dados observados no Validation Sprint. O sprint foi adiado por indisponibilidade de dataset. A V0 é o instrumento que produzirá esses dados — logo o gate depende do que ele deveria autorizar.
-Isto **não** pode ser resolvido silenciosamente por esta especificação. Requer **ADR-21** decidindo explicitamente uma de duas saídas: (a) o gate é reinterpretado como teto provisório de budget imposto pelo Budget Controller, com revisão obrigatória assim que houver dados reais; ou (b) o gate permanece bloqueante e a implementação aguarda outra fonte de dados de custo. A opção (a) é a que a estratégia prospectiva implica, mas a decisão é da dona do projeto e precisa ficar registrada como mudança de interpretação da baseline, não como omissão.
+`NONE`
 
-**OQ-B2 — Política de provedor e localidade dos dados.**
-Baseline §34 nº 6: quais dados podem ser processados por quais provedores. Bloqueia os contratos de LLM (§18) e a configuração de redaction (§26). Precisa definir: qual provedor, se a V0 roda apenas localmente, e se dados de terceiros mencionados em capturas podem sair da máquina. Sem isso não é possível escrever a primeira chamada de modelo de forma responsável.
+Os dois blockers originais foram resolvidos por ADR formal em 2026-08-30.
+
+**OQ-B1 — Cost & Latency Gate circular dependency** → `RESOLVED BY ADR-21`
+O gate da baseline §26 foi dividido em dois níveis por [ADR-21](../decisions/ADR-21-prospective-cost-latency-gate.md). **Gate A (Pre-build Operational Guardrail)** autoriza construir e medir, condicionado a registro de chamadas, tokens, latência e custo, Budget Controller com hard limit configurável, capacidade de interromper chamadas, preferência por caminhos determinísticos, nenhum componente dependente de consumo ilimitado e possibilidade de desenvolver com mocks. **Gate B (Evidence-based Economic Viability)** permanece **aberto** e continua sendo gate arquitetural antes de qualquer expansão.
+O requisito de custo **não** foi removido. Os limites usados em desenvolvimento são `OPERATIONAL SAFETY CAPS`, não `PRODUCT VALIDATION THRESHOLDS`; seus valores são configuração operacional definida no Implementation Plan. H-05 permanece `NOT TESTED`.
+
+**OQ-B2 — Provider / Data Locality Policy** → `RESOLVED BY ADR-22`
+[ADR-22](../decisions/ADR-22-v0-data-provider-boundary.md) adota `LOCAL-FIRST PERSISTENCE + PROVIDER-AGNOSTIC MODEL INTERFACE`. Ledger, estado, memória, Declared Cognition, DecisionRecords, telemetria, feedback, conteúdo bruto e artifacts permanecem locais; nenhuma cloud persistence é necessária na V0. Só o contexto necessário atravessa a fronteira externa, após classificação de sensibilidade e redaction, com `evidence_ids`, provider/model, finalidade e `ModelRun` registrados. O contrato `ModelProvider` mantém a arquitetura desacoplada de provedor.
+A escolha do provedor primário é `IMPLEMENTATION DECISION` e migra para o gate abaixo.
+
+### BLOCKING BEFORE FIRST EXTERNAL MODEL CALL
+
+- **select initial model provider**;
+- **verify provider data handling against ADR-22** — retenção, uso para treinamento, classes de sensibilidade proibidas de atravessar a fronteira;
+- **configure operational safety caps defined under ADR-21** — teto por checkpoint/dia/mês, limite de retries, ponto de interrupção.
+
+Enquanto este gate estiver aberto, **nenhum conteúdo real pode ser enviado a um provedor externo**. O mock provider é o único provider registrado até que ele feche. Isso não bloqueia o Slice 0 nem os slices seguintes que não dependem de LLM real.
 
 ### CAN DEFER
 
@@ -1252,7 +1266,10 @@ Baseline §34 nº 6: quais dados podem ser processados por quais provedores. Blo
 - não atribui GO, PIVOT ou STOP a nenhum experimento;
 - não marca hipótese alguma como testada;
 - não implementa código;
-- não cria ADR — OQ-B1 identifica a necessidade de ADR-21, cuja criação pertence ao gate seguinte.
+- não seleciona provedor de modelo, explícita ou implicitamente;
+- não envia dado algum externamente.
+
+As decisões que destravaram o Implementation Plan estão registradas fora desta especificação, em [ADR-21](../decisions/ADR-21-prospective-cost-latency-gate.md) e [ADR-22](../decisions/ADR-22-v0-data-provider-boundary.md).
 
 ## Próximo gate
 

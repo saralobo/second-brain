@@ -5,7 +5,10 @@ Current document:
 AVA Technical V0 Specification v0.1
 
 Status:
-DRAFT FOR IMPLEMENTATION PLANNING
+READY FOR IMPLEMENTATION PLANNING
+
+Blocking questions:
+NONE
 
 Architecture baseline:
 Architecture Package v0.2 Final (FROZEN, tag architecture-v0.2-final)
@@ -22,17 +25,19 @@ A especificação traduz a arquitetura congelada em contratos implementáveis. E
 
 Em conflito, a autoridade é: Architecture Package v0.2 Final > esta especificação.
 
-## Questões bloqueantes
+## Blockers resolvidos
 
-Duas decisões precisam ser tomadas antes do Implementation Plan:
+| ID | Questão | Resolução |
+| --- | --- | --- |
+| OQ-B1 | gate de custo da baseline §26 em dependência circular | [ADR-21](../decisions/ADR-21-prospective-cost-latency-gate.md) — gate dividido em Gate A (pre-build guardrail) e Gate B (viabilidade econômica com dados medidos, **ainda aberto**) |
+| OQ-B2 | política de provedor e localidade dos dados | [ADR-22](../decisions/ADR-22-v0-data-provider-boundary.md) — `LOCAL-FIRST PERSISTENCE + PROVIDER-AGNOSTIC MODEL INTERFACE` |
 
-| ID | Questão |
-| --- | --- |
-| OQ-B1 | o gate de custo da baseline §26 não pode ser fechado como especificado; requer **ADR-21** |
-| OQ-B2 | política de provedor e localidade dos dados |
+**Blocking before Implementation Plan: `NONE`.**
 
-Ver §33 da especificação.
+Permanece um gate posterior, `BLOCKING BEFORE FIRST EXTERNAL MODEL CALL`: selecionar o provedor inicial, verificar seu tratamento de dados contra o ADR-22 e configurar os operational safety caps do ADR-21. Ele não bloqueia o Slice 0. Enquanto estiver aberto, nenhum conteúdo real pode ser enviado a um provedor externo.
+
+O requisito de custo **não** foi removido, e nenhuma hipótese foi validada. Ver §33 da especificação.
 
 ## Próximo gate
 
-Criar o AVA V0 Implementation Plan v0.1.
+`Create AVA V0 Implementation Plan v0.1`
