@@ -3,17 +3,20 @@
 ```text
 # Validation
 
-Current phase:
-Validation Sprint 0 — blocked before start
+Historical Validation Sprint 0:
+DEFERRED — HISTORICAL DATASET UNAVAILABLE
 
-Current gate:
-PROVIDE ELIGIBLE WORK SOURCE FOR SPRINT 0
+Current strategy:
+PROSPECTIVE INSTRUMENTED VALIDATION
 
-Status:
-PRE-EXECUTION DECISIONS LOCKED
+Current product phase:
+TECHNICAL V0 SPECIFICATION
 
-Sprint execution:
-NOT STARTED — BLOCKED (see deviation D-001)
+Hypotheses:
+H-01 H-02 H-03 H-04 H-05 H-06 — ALL NOT TESTED
+
+Pre-execution decisions:
+LOCKED (historical, unchanged)
 
 Protocol:
 validation-sprint-0-protocol-v0.1.md
@@ -27,6 +30,8 @@ Architecture baseline:
 
 - **Protocol:** [Validation Sprint 0 Protocol v0.1](validation-sprint-0-protocol-v0.1.md) — `READY FOR EXECUTION`
 - **Decision pack:** [Pre-Execution Decisions v0.1](pre-execution-decisions-v0.1.md) — `LOCKED` em 2026-08-30
+- **Current strategy:** [Prospective Validation Strategy v0.1](prospective-validation-strategy-v0.1.md) — `ADOPTED`
+- **Technical spec:** [AVA Technical V0 Specification v0.1](../specification/ava-technical-v0-specification-v0.1.md) — `DRAFT FOR IMPLEMENTATION PLANNING`
 - **Experiment log:** [sprint-0-experiment-log.md](observations/sprint-0-experiment-log.md) — `BLOCKED — CANDIDATE SOURCE FAILED ELIGIBILITY`
 - **Architecture baseline:** [Architecture Package v0.2 Final](../architecture/architecture-package-v0.2-final.md) — tag `architecture-v0.2-final`
 
@@ -93,6 +98,16 @@ Os critérios **GO / PIVOT / STOP** foram definidos e travados **antes** de qual
 
 Alteração de qualquer critério após o início da execução é **protocol deviation** registrada, e não recalcula retroativamente nenhuma avaliação já produzida.
 
+## Mudança de estratégia
+
+O sprint retrospectivo foi **adiado**, não reprovado. Nenhum GO, PIVOT ou STOP lhe foi atribuído, e nenhum threshold foi avaliado — nem atingido, nem violado. A validação passa a ser **prospectiva**: construir a menor V0 fiel capaz de gerar os dados longitudinais que o estudo histórico não pôde fornecer.
+
+Ver [Prospective Validation Strategy v0.1](prospective-validation-strategy-v0.1.md).
+
+**Nenhuma hipótese está validada.** A arquitetura permanece congelada e não verificada empiricamente.
+
+O protocolo histórico e o decision lock permanecem inalterados e podem fornecer métricas, schemas e thresholds — mas nenhum threshold migra para o contexto prospectivo sem que a equivalência semântica seja documentada em um Prospective Validation Protocol explicitamente versionado.
+
 ## Próximo gate
 
-Disponibilizar acesso a fonte de trabalho real para o Sprint 0.
+Criar o AVA V0 Implementation Plan v0.1.
