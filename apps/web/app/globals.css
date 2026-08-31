@@ -53,3 +53,20 @@ ul.plain { list-style: none; padding: 0; margin: 0; }
 .diff { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
 .diff > div { flex: 1 1 240px; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
 .diff .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+
+/* Memory: the five sections must be impossible to confuse.
+   A guess may never look as authoritative as something the user said. */
+.section-declared { border-left: 4px solid var(--accent); }
+.section-evidence { border-left: 4px solid #4a6fa5; }
+.section-hypothesis { border-left: 4px dashed var(--warn); background: #fdfaf3; }
+.section-uncertain { border-left: 4px dotted var(--muted); background: #f7f6f4; }
+.section-superseded { border-left: 4px solid var(--line); opacity: .72; }
+.authority { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+.authority.high { color: var(--accent); }
+.authority.mid { color: #4a6fa5; }
+.authority.low { color: var(--warn); }
+.authority.none { color: var(--muted); }
+.section-hint { font-size: 12.5px; color: var(--muted); margin: 0 0 10px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.actions form { display: inline; }
+.actions button { margin-top: 0; padding: 5px 12px; font-size: 12.5px; }

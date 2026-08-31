@@ -78,6 +78,43 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         </ul>
       </div>
 
+      {(dr.packet?.declaredCognition ?? []).length > 0 && (
+        <>
+          <h2>What you told AVA, and why it applied here</h2>
+          <ul className="plain">
+            {dr.packet.declaredCognition.map((c) => (
+              <li key={c.cognitionId} className="card section-declared">
+                <div><span className="authority high">{c.authority.toLowerCase()} by you</span></div>
+                <p style={{ margin: '6px 0' }}>{c.content}</p>
+                <div className="meta">applies to — {c.scopeDescription}</div>
+                <div className="meta">why it applied here — {c.matchReason}</div>
+                <div className="meta mono">{c.cognitionId} · {c.cognitionType}</div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {(dr.packet?.behavioralHypotheses ?? []).length > 0 && (
+        <>
+          <h2>What AVA was only guessing</h2>
+          <p className="section-hint">
+            Shown for transparency. These carried no weight in the answer, and they were not sent
+            to any model.
+          </p>
+          <ul className="plain">
+            {dr.packet.behavioralHypotheses.map((h) => (
+              <li key={h.hypothesisId} className="card section-hypothesis">
+                <div><span className="authority low">hypothesis — you never told me this</span></div>
+                <p style={{ margin: '6px 0' }}>{h.falsifiableDescription}</p>
+                <div className="meta">observed in — {h.context} · status {h.status}</div>
+                <div className="meta mono">{h.hypothesisId}</div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
       <h2>Evidence used</h2>
       {used.length === 0 ? (
         <div className="empty">No evidence was used. That is why AVA did not assert anything.</div>
@@ -125,6 +162,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <div>provider: {dr.provider ?? 'none — answered locally'}</div>
         <div>model: {dr.model ?? '—'}</div>
         <div>grounding validation: {dr.groundingValid === null ? 'not run' : dr.groundingValid ? 'passed' : 'FAILED — answer discarded'}</div>
+        <div>
+          cognitive authority: {dr.cognitiveAuthority ?? 'none'}
+          {dr.declaredCognitionIds.length > 0 && ` · ${dr.declaredCognitionIds.length} declaration(s) applied`}
+          {dr.hypothesisIds.length > 0 && ` · ${dr.hypothesisIds.length} hypothesis(es) reported as guesses`}
+        </div>
         {dr.groundingFailures.length > 0 && (
           <ul style={{ margin: '6px 0 0 18px' }}>
             {dr.groundingFailures.map((f, i) => <li key={i}>{f.kind}: {f.detail}</li>)}
