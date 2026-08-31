@@ -84,9 +84,18 @@ const text = (html: string): string =>
   html.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
 
 describe('Milestone 1 — capture and change loop, in the browser-facing output', () => {
-  it('lists the workstream on the home page', async () => {
-    const html = await (await fetch(BASE)).text()
+  it('lists the workstream on the workstreams surface', async () => {
+    // Interaction Layer I0 moved the workstream list off the root: AVA is the
+    // entry point now, and workstreams are one destination among six.
+    const html = await (await fetch(`${BASE}/workstreams`)).text()
     expect(text(html)).toContain('Project Alpha')
+  })
+
+  it('opens on AVA rather than on a list of projects', async () => {
+    const html = text(await (await fetch(BASE)).text())
+    expect(html).toContain('AVA')
+    // The root offers conversation, not a filing cabinet.
+    expect(html).toMatch(/Talk to AVA/i)
   })
 
   it('offers all ten capture types', async () => {
@@ -100,7 +109,7 @@ describe('Milestone 1 — capture and change loop, in the browser-facing output'
   })
 
   it('shows current state, the detected change, and the still-reachable past', async () => {
-    const home = await (await fetch(BASE)).text()
+    const home = await (await fetch(`${BASE}/workstreams`)).text()
     const match = home.match(/\/workstreams\/[A-Z0-9]{26}/)
     expect(match).not.toBeNull()
 

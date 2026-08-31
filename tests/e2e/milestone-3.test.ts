@@ -151,7 +151,7 @@ describe('Milestone 3 — inspectable personal cognition', () => {
   })
 
   it('answers the personal question from the corrected declaration', async () => {
-    const wsId = (await (await fetch(BASE)).text()).match(/\/workstreams\/([A-Z0-9]{26})/)![1]
+    const wsId = (await (await fetch(`${BASE}/workstreams`)).text()).match(/\/workstreams\/([A-Z0-9]{26})/)![1]
     const page = text(await (await fetch(`${BASE}/workstreams/${wsId}/chat`)).text())
 
     expect(page).toContain('What you explicitly told me')
@@ -161,7 +161,7 @@ describe('Milestone 3 — inspectable personal cognition', () => {
   })
 
   it('shows declaration provenance in the Why surface', async () => {
-    const wsId = (await (await fetch(BASE)).text()).match(/\/workstreams\/([A-Z0-9]{26})/)![1]
+    const wsId = (await (await fetch(`${BASE}/workstreams`)).text()).match(/\/workstreams\/([A-Z0-9]{26})/)![1]
     const chat = await (await fetch(`${BASE}/workstreams/${wsId}/chat`)).text()
     const whyIds = [...chat.matchAll(/\/why\/([A-Z0-9]{26})/g)].map((m) => m[1]!)
     expect(whyIds.length).toBeGreaterThan(0)

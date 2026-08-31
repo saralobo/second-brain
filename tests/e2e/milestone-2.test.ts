@@ -113,9 +113,9 @@ async function firstWorkstreamId(env: Record<string, string>): Promise<string> {
 }
 
 async function workstreamId(): Promise<string> {
-  const home = await (await fetch(BASE)).text()
+  const home = await (await fetch(`${BASE}/workstreams`)).text()
   const m = home.match(/\/workstreams\/([A-Z0-9]{26})/)
-  if (!m) throw new Error('no workstream on the home page')
+  if (!m) throw new Error('no workstream on the workstreams page')
   return m[1]!
 }
 
