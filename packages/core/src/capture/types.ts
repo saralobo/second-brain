@@ -7,6 +7,12 @@ import type { ContentOrigin, Sensitivity } from '../primitives/origin'
 export type CaptureType =
   | 'note'
   | 'event'
+  /**
+   * Slice 5. `artifact` was already a State Object type with a lifecycle
+   * (spec §3.5) but had no capture route, so a dependent artifact could not
+   * be created — which GS-02 requires. Recorded as deviation D-18.
+   */
+  | 'artifact'
   | 'decision'
   | 'goal'
   | 'commitment'
@@ -18,7 +24,7 @@ export type CaptureType =
 
 export const CAPTURE_TYPES: readonly CaptureType[] = [
   'note', 'event', 'decision', 'goal', 'commitment',
-  'question', 'risk', 'correction', 'preference', 'principle',
+  'question', 'risk', 'artifact', 'correction', 'preference', 'principle',
 ] as const
 
 export function isCaptureType(v: unknown): v is CaptureType {
@@ -27,7 +33,7 @@ export function isCaptureType(v: unknown): v is CaptureType {
 
 /** Types that produce a State Object in Slice 2. */
 export const STATE_PRODUCING_TYPES: readonly CaptureType[] = [
-  'decision', 'goal', 'commitment', 'question', 'risk',
+  'decision', 'goal', 'commitment', 'question', 'risk', 'artifact',
 ] as const
 
 /**
