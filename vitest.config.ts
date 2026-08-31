@@ -18,7 +18,12 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['packages/**/*.test.ts', 'tests/integration/**/*.test.ts', 'tests/golden/**/*.test.ts'],
+    include: [
+      'packages/**/*.test.ts',
+      'tests/integration/**/*.test.ts',
+      'tests/golden/**/*.test.ts',
+      'tests/validation/**/*.test.ts',
+    ],
     exclude: ['**/node_modules/**', '**/dist/**'],
     testTimeout: 30_000,
     hookTimeout: 30_000,

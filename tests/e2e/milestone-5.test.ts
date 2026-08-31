@@ -136,6 +136,36 @@ describe('Milestone 5 — closed intervention loop', () => {
     expect(page).not.toMatch(/thumbs/i)
   })
 
+  /**
+   * Deviation D-05, revisited. The harness asserts server-rendered HTML rather
+   * than driving a browser, so it cannot click a form. What it CAN do is check
+   * that the fields the server action reads are the fields the page renders —
+   * which is the failure that would otherwise be silent: a renamed input does
+   * not throw, it just records nothing, and the validation data would go
+   * missing without anyone noticing.
+   */
+  it('renders feedback inputs under the exact names the server action reads', async () => {
+    const html = await (await fetch(`${BASE}/why/opportunity/${opportunityId}`)).text()
+    for (const field of ['epistemic', 'delivery', 'reason', 'targetId', 'targetType']) {
+      expect(html, `input name="${field}" missing`).toContain(`name="${field}"`)
+    }
+    for (const field of ['kind', 'description', 'opportunityId']) {
+      expect(html, `action input name="${field}" missing`).toContain(`name="${field}"`)
+    }
+    for (const field of ['state', 'note']) {
+      expect(html, `outcome input name="${field}" missing`).toContain(`name="${field}"`)
+    }
+    // And every verdict the schema accepts is offered.
+    for (const v of ['correct', 'partially_correct', 'incorrect', 'not_verifiable']) {
+      expect(html, `epistemic option ${v} missing`).toContain(`value="${v}"`)
+    }
+    for (const v of ['valuable', 'already_known', 'irrelevant', 'too_early', 'too_late']) {
+      expect(html, `delivery option ${v} missing`).toContain(`value="${v}"`)
+    }
+    // Not answering must be offered as a first-class choice.
+    expect(html).toContain('value="not_provided"')
+  })
+
   it('does not hide an item because of what the user said about it', async () => {
     const page = text(await (await fetch(`${BASE}/workstreams/${workstreamId}/today`)).text())
     expect(page).toContain('may need review')

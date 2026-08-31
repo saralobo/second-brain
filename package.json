@@ -31,7 +31,11 @@
     "eval:answers": "tsx packages/app/src/cli/answer-eval.ts",
     "cognition": "tsx packages/app/src/cli/cognition.ts",
     "today": "tsx packages/app/src/cli/today.ts",
-    "feedback": "tsx packages/app/src/cli/feedback.ts"
+    "feedback": "tsx packages/app/src/cli/feedback.ts",
+    "validation:export": "tsx packages/app/src/cli/validation.ts",
+    "test:validation": "vitest run tests/validation",
+    "db:backup": "tsx packages/db/src/cli/backup.ts",
+    "db:restore": "tsx packages/db/src/cli/backup.ts restore"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
