@@ -1,21 +1,28 @@
 # Slice 3 Provider Gate v0.1
 
 ```text
-Status: PENDING
+Status: IMPLEMENTED — AWAITING CONTROLLED PROVIDER VERIFICATION
 Date: 2026-08-30
+Decisions recorded: 2026-08-30
+Primary provider: Anthropic / claude-sonnet-5 (INITIAL V0 IMPLEMENTATION PROVIDER)
+Challenger: OpenAI / gpt-5.6-terra (S3-T13 eval candidate, no adapter)
 Architecture baseline: Architecture Package v0.2 Final (tag architecture-v0.2-final)
 Governing decisions: ADR-21, ADR-22
 Batch 1: ACCEPTED
 Slice 3: NOT STARTED
 External model calls to date: NONE
-Provider selected: NONE
+Provider selected: Anthropic
+Safety caps: CONFIGURED
+Real external call: NOT EXECUTED — ANTHROPIC_API_KEY unavailable
 ```
 
 This document reviews Batch 1 against the Implementation Plan and prepares the gate that
 ADR-22 requires before any real content crosses the provider boundary.
 
-**It selects no provider and sets no cap.** Both require input this repository does not
-contain.
+**Revision, 2026-08-30.** The owner's decisions have been recorded and the technical
+blockers closed. Sections 1, 2, 7 and 12 below preserve the original analysis as written
+before the decisions — the reasoning that led to them is not rewritten after the fact.
+Part 3 records what was decided and built.
 
 ---
 
@@ -539,3 +546,284 @@ Hypotheses H-01..H-06:      NOT TESTED
 ## Next gate
 
 Resolve provider selection and operational safety caps.
+
+---
+
+# Part 3 — Decisions recorded and gate closure
+
+Added 2026-08-30, after the owner's decisions. Parts 1 and 2 above are preserved as
+written **before** those decisions; the analysis that led to a choice is not edited once
+the choice is made.
+
+## 1. Provider decision
+
+```text
+Primary provider:  Anthropic
+Primary model:     claude-sonnet-5
+Initial purpose:   Grounded Answer Generation
+Challenger:        OpenAI gpt-5.6-terra (evaluation only, no production adapter)
+```
+
+Anthropic is the **`INITIAL V0 IMPLEMENTATION PROVIDER`**, and explicitly **not** the
+`PERMANENT ARCHITECTURAL PROVIDER`. AVA remains provider-agnostic under ADR-22: the SDK
+exists in exactly one file, and the boundary lint fails the build if any other package
+imports it.
+
+The challenger receives no production adapter now. It belongs to the `S3-T13` evals,
+where the comparison must cover grounded correctness, unsupported assertions,
+evidence-use fidelity, abstention, structured-output validity, latency and cost. That
+comparison may keep Sonnet 5, switch to Terra, or split models by archetype. Nothing is
+anticipated here.
+
+## 2. Verified provider facts
+
+Verified externally on **2026-08-30**. Recorded as facts with a date, not as guarantees.
+
+### Anthropic — Claude Sonnet 5
+
+| Fact | Value |
+| --- | --- |
+| API model ID | `claude-sonnet-5` |
+| Version pinning | model ID is a pinned snapshot per current Anthropic documentation |
+| Structured Outputs | available |
+| Streaming | available via the API |
+| Price — input | US$ 2 per 1M tokens |
+| Price — output | US$ 10 per 1M tokens |
+| Training on commercial API data | not used for training by default |
+| Default retention | automatic backend deletion within 30 days |
+| Zero Data Retention | available to eligible organisations by agreement |
+| Storage location | United States |
+| Processing regions | may occur in multiple regions per Anthropic policy |
+
+### OpenAI — GPT-5.6 Terra (challenger)
+
+| Fact | Value |
+| --- | --- |
+| Structured Outputs | available |
+| Streaming | available |
+| Function calling | available |
+| Price — input | US$ 2 per 1M tokens |
+| Price — output | US$ 12 per 1M tokens |
+| Training on API data | not used for training by default |
+| Abuse-monitoring retention | up to 30 days under the standard regime |
+| Zero Data Retention | subject to eligibility and approval |
+
+### References
+
+- Anthropic — pricing: <https://www.anthropic.com/pricing>
+- Anthropic — models overview: <https://docs.anthropic.com/en/docs/about-claude/models>
+- Anthropic — privacy and data usage: <https://privacy.anthropic.com/>
+- Anthropic — commercial terms: <https://www.anthropic.com/legal/commercial-terms>
+- OpenAI — pricing: <https://openai.com/api/pricing/>
+- OpenAI — enterprise privacy and data controls: <https://openai.com/enterprise-privacy/>
+- OpenAI — API data usage policies: <https://platform.openai.com/docs/guides/your-data>
+
+> **Provider policy must be reverified before Prospective Validation and after material
+> provider-policy changes.**
+
+The facts above are recorded in code as `ANTHROPIC_POLICY` in
+`packages/llm/src/providers/anthropic.ts`, so the policy gate consults them rather than
+relying on anyone remembering them. A stale entry there is a stale gate.
+
+## 3. Data policy — V0
+
+| Class | Derived from | External provider |
+| --- | --- | --- |
+| **CLASS 0** — synthetic / development | fixtures, seeds, explicitly marked synthetic | `ALLOWED` |
+| **CLASS 1** — user-authored ordinary | `content_origin = user` and effective `sensitivity = normal` | `ALLOWED AFTER MINIMIZATION` |
+| **CLASS 2** — third-party / work-context | `content_origin ∈ {third_party, source_system}` or effective `sensitivity = sensitive` | `CONDITIONAL` |
+| **CLASS 3** — restricted | effective `sensitivity = restricted`, **or** `content_origin = system` | `DENIED` |
+
+CLASS 2 requires **all** of: task necessity, minimization, redaction, removal of
+unnecessary third-party identifiers, a passing provider policy gate, and an audit record
+in `ModelRun`.
+
+**CLASS 3 has no automatic override in V0.** Fallback order: deterministic/local path →
+retrieve differently → ask the user when appropriate → abstain.
+
+Two implementation points worth stating:
+
+- `content_origin = system` is classified CLASS 3 deliberately. AVA's own output cannot
+  corroborate AVA (baseline §11), so sending it as evidence would inflate apparent
+  support without adding any.
+- Nothing is sent merely because it appears in a Context Packet. Selection is by task
+  necessity, and the pipeline caps both item count and per-item length.
+
+## 4. Operational safety caps
+
+```text
+maximum_cost_per_call_usd        = 0.15
+maximum_cost_per_checkpoint_usd  = 0.50
+daily_cost_cap_usd               = 2.00
+monthly_cost_cap_usd             = 20.00
+maximum_retries_per_call         = 1
+hard_stop_behaviour              = ABORT EXTERNAL CALL / ABSTAIN
+```
+
+These are **`OPERATIONAL SAFETY CAPS`**, never validation thresholds. A cap being reached
+means the operational limit worked; it says nothing about whether the product passed the
+economic gate. **ADR-21 Gate B remains open.**
+
+Hard stop means: no silent switch to a cheaper model, no exceeding the budget, no
+multiplying retries, no omitted accounting. When the estimated cost of a call would
+exceed a cap **before sending**, the provider is not called and the denial is recorded as
+a `ModelRun` with status `DENIED`.
+
+The estimate assumes maximum output tokens, so the gate errs towards refusing rather than
+towards overspending.
+
+## 5. F-01 — effective sensitivity · **FIXED**
+
+`EvidenceRepository.effectiveSensitivity(evidenceId)` and `effectiveSensitivities(ids)`
+resolve the governing sensitivity by taking the most recent non-null annotation and
+falling back to the value stored at capture. `findForBoundary(ids)` is the only shape the
+provider boundary consumes, and it always returns evidence with the effective value
+applied.
+
+The original evidence row is never modified — `annotate()` appends to
+`evidence_annotation`, which is itself append-only.
+
+Test (`tests/integration/provider-boundary.test.ts`):
+
+```text
+evidence created as normal      → boundary call ALLOWED
+annotation changes to restricted → effectiveSensitivity = restricted
+                                  → boundary call DENIED at stage 'sensitivity'
+                                  → no ModelRun opened; the call was never prepared
+evidence row itself             → still 'normal', content unchanged
+```
+
+## 6. F-02 — provider registry · **FIXED**
+
+`ProviderRegistry` requires five steps before execution: **registered → configured →
+enabled → allowed by policy → allowed by budget**. A resolution failure names the step
+it failed at, so a denial is diagnosable.
+
+Registration alone authorises nothing, and `enable()` refuses a provider that is not
+configured. Providers are constructed explicitly in `buildProviderRegistry`; nothing is
+discovered from the filesystem or executed because a name appears in configuration. The
+Anthropic adapter is imported **dynamically and only when a key is present**, so the SDK
+is never even loaded on a path that does not need it.
+
+Tested: unregistered denied, unconfigured denied, configured-but-disabled denied,
+enabling an unconfigured provider throws, boundary call denied when the provider is
+disabled, and selecting `anthropic` without a key falls back to the mock rather than
+failing open.
+
+## 7. ModelRun · **IMPLEMENTED**
+
+Migration `0004_model_run.sql`. Records provider, model, resolved model identifier,
+archetype, purpose, prompt id and version, evidence ids sent, sensitivity summary,
+redactions applied, request start and response completion, latency, input and output
+tokens, estimated and actual cost, price table version, status, retry count, error kind
+and detail, fallback flag and denial reason.
+
+**The record is opened in `PENDING` before the provider is called.** A test proves it by
+querying the database from inside the provider call and asserting the row already exists
+in `PENDING`. Terminal states: `COMPLETE`, `FAILED`, `DENIED`, `ABORTED`.
+
+Two accounting rules:
+
+- **Unknown token usage is stored as `NULL`, never as zero.** Zero is a claim that the
+  call was free; `NULL` is the truth that the provider did not say.
+- **Cost is derived locally from tokens and a versioned price table**, and every run
+  records `price_table_version`. Without that, a later price change would silently
+  rewrite the cost history ADR-21 Gate B will read.
+
+Scope note: the Implementation Plan bundles `context_health`, `decision_record` and
+`model_run` into migration `0004` under `S3-T01`. Only `model_run` was needed to close
+this gate, so it ships alone; the other two remain part of `S3-T01`.
+
+## 8. Minimization and redaction pipeline · **IMPLEMENTED**
+
+`callThroughBoundary` in `packages/app/src/provider-boundary.ts` is the single path to a
+provider:
+
+```text
+evidence selection → effective sensitivity → classification → minimization
+→ redaction → provider policy → budget → ModelRun PENDING → provider
+→ structured validation → response
+```
+
+The policy gate sits **before** the budget gate: a call policy forbids must never consume
+budget headroom.
+
+**Provider-boundary redaction is separate from logging redaction**, because the two jobs
+are opposites. Logging redaction destroys content; boundary redaction preserves the
+meaning the task needs while removing what the provider has no reason to receive. V0
+covers: e-mail addresses, phone numbers, credentials embedded in URLs, long digit
+sequences, and third-party names — the last supplied by the caller, never guessed.
+
+Third-party names become stable placeholders (`[person 1]`), so the text still reads as
+one person acting twice rather than dissolving into anonymity.
+
+This is **not** a universal DLP engine and does not attempt to be. When redaction would
+destroy the context the task needs, the result is marked `degraded` and the call is not
+made — sending something mangled would be worse than not answering.
+
+## 9. Anthropic adapter · **IMPLEMENTED**
+
+`packages/llm/src/providers/anthropic.ts`, the only file permitted to import
+`@anthropic-ai/sdk`. Implements the existing `ModelProvider` contract. The model name is
+configuration (`AVA_MODEL_NAME`, default `claude-sonnet-5`) and is never hardcoded into
+the domain.
+
+SDK-level retries are disabled (`maxRetries: 0`) so the ADR-21 retry cap cannot be
+bypassed silently by the client library.
+
+Local structural validation runs on every response **even though the provider supports
+Structured Outputs**. A promise of schema compliance is not a check. A structurally valid
+response is also not a grounded one: grounding validation belongs to Slice 3.
+
+Boundary tested by attempted violation: probe files importing the SDK into `core` and
+into `ingestion` both make the lint fail, and the lint passes once they are removed. A
+lint that has never rejected anything proves nothing.
+
+## 10. Controlled real call
+
+**`PROVIDER PIPELINE READY — REAL CALL NOT EXECUTED`**
+
+`ANTHROPIC_API_KEY` is not present in this environment. `npm run provider:smoke` reports
+this and exits cleanly rather than inventing a result.
+
+The script is written and ready: it runs **one** call against CLASS 0 synthetic data in a
+throwaway in-memory database, and reports model identifier, token counts, latency, cost,
+evidence ids, prompt version and schema result.
+
+The gate implementation is complete, but the gate **cannot** be marked
+`VERIFIED BY REAL CALL` until that check runs.
+
+## 11. Slice 3 readiness
+
+### Provider-independent tasks — `READY`
+
+`S3-T01` (remaining tables) · `S3-T02` · `S3-T03` · `S3-T04` · `S3-T05` · `S3-T06` ·
+`S3-T08` · `S3-T09` · `S3-T12` · `S3-T14`
+
+### Provider-dependent tasks — `READY`, pending controlled verification
+
+`S3-T07` · `S3-T10` · `S3-T11` · `S3-T13`
+
+The technical requirements are satisfied. What remains is running the controlled call
+once a key is available, and the `S3-T13` evals — which are the point at which the
+challenger comparison happens.
+
+## 12. Gate status
+
+```text
+Status:              IMPLEMENTED — AWAITING CONTROLLED PROVIDER VERIFICATION
+Provider:            Anthropic / claude-sonnet-5
+Challenger:          OpenAI / gpt-5.6-terra (eval only)
+Safety caps:         CONFIGURED
+F-01:                FIXED
+F-02:                FIXED
+ModelRun:            IMPLEMENTED
+Redaction pipeline:  IMPLEMENTED
+Real external call:  NOT EXECUTED — API key unavailable
+ADR-21 Gate B:       OPEN
+Hypotheses H-01..06: NOT TESTED
+```
+
+## Next gate
+
+Implement AVA V0 Slice 3 — Chat + Retrieval.
