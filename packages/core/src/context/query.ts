@@ -9,6 +9,7 @@
  * front of the retrieval that is supposed to constrain the model.
  */
 export type QueryKind =
+  | 'intervention'
   | 'personal'
   | 'state'
   | 'change'
@@ -29,7 +30,17 @@ export interface ClassifiedQuery {
 }
 
 const PATTERNS: readonly { kind: QueryKind; re: RegExp; reason: string }[] = [
-  // Checked first: a question about the person must never be answered by the
+  // Slice 6. Checked before `personal`, because "which suggestions did I mark
+  // valuable?" is a question about AVA's own record of what the user judged,
+  // not a question about what the user prefers. Answered entirely from stored
+  // feedback, actions and outcomes; no model is involved.
+  { kind: 'intervention',
+    re: /\b(did i mark|i marked|my feedback|feedback did i give|what happened after)\b/i,
+    reason: 'asks about feedback the user gave, or what followed an intervention' },
+  { kind: 'intervention',
+    re: /\b(opportunit(y|ies)|suggestions?|interventions?)\b[\s\S]*\b(valuable|irrelevant|already kn(own|ew)|unresolved|resolved|outcome|correct)\b/i,
+    reason: 'asks about recorded feedback or outcomes for shown opportunities' },
+  // Checked next: a question about the person must never be answered by the
   // work-state path, where a preference would be treated as a fact.
   { kind: 'personal',
     re: /\b(my preference|my preferences|about me|told you|do i prefer|i prefer|guessing about me|know about me|my principle|my principles|my criteria|my style|my taste)\b/i,
