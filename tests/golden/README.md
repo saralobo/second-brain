@@ -14,12 +14,17 @@ Scenarios implemented through Slice 3:
 | GS-01 | Superseded Decision | implemented |
 | GS-02 | Invalidated Artifact (impact only; the Opportunity half is Slice 5) | partial, impact half |
 | GS-03 | Unresolved Question | partial — the chat half; the Opportunity half is Slice 5 |
+| GS-04 | Correction of Declared Cognition | implemented |
 | GS-05 | Insufficient Context → Abstention | implemented |
-| GS-06 | System-origin evidence cannot self-confirm | implemented, extended to grounded answering |
+| GS-06 | System-origin evidence cannot self-confirm | implemented, extended to grounded answering and to memory |
 | GS-07 | Entity ambiguity remains unresolved | implemented |
 
-Not implemented here because they depend on later slices: GS-04 (Slice 4),
-GS-08 (Slices 5–6).
+Not implemented here because it depends on later slices: GS-08 (Slices 5–6).
+
+GS-06 now closes the full self-poisoning cycle: AVA states X, X is captured as
+system-origin evidence, X is retrieved later, and it must not count as new
+confirmation of X. Left open, that loop is how a system talks itself into
+certainty with nothing behind it but repetition.
 
 GS-05 is the one the implementation plan calls the easiest to let pass by
 accident. It passes only when AVA **refuses** — an answer with a warning

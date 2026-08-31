@@ -21,7 +21,11 @@ describe('context packet', () => {
       })
 
       const { packet, candidateCount, strategy } = await buildContextPacket(
-        { retrieval: ctx.retrieval, state: ctx.state, changes: ctx.changes },
+        {
+          retrieval: ctx.retrieval, state: ctx.state, changes: ctx.changes,
+          cognition: ctx.cognition, hypotheses: ctx.hypotheses, memory: ctx.memory,
+          evidence: ctx.evidence,
+        },
         { question: 'What do you know about releases?', workstreamId: ws.id },
       )
 
@@ -30,11 +34,14 @@ describe('context packet', () => {
       expect(packet.query.kind).toBe('state')
       expect(packet.currentState).toHaveLength(1)
       expect(packet.changes.length).toBeGreaterThan(0)
-      expect(packet.health.dimensions).toHaveLength(10)
+      expect(packet.health.dimensions).toHaveLength(11)
       expect(packet.providerEligibleEvidenceIds.length).toBeGreaterThan(0)
 
-      // Slice 4 fields stay empty rather than being filled with placeholders.
+      // Nothing was declared in this workstream, so the cognition sections are
+      // empty — which is the honest value, not a placeholder.
       expect(packet.declaredCognition).toEqual([])
+      expect(packet.behavioralHypotheses).toEqual([])
+      expect(packet.stabilizedKnowledge).toEqual([])
 
       // Every result carries what an auditor needs.
       const r = packet.retrieved[0]!
@@ -60,7 +67,11 @@ describe('context packet', () => {
       })
 
       const { packet } = await buildContextPacket(
-        { retrieval: ctx.retrieval, state: ctx.state, changes: ctx.changes },
+        {
+          retrieval: ctx.retrieval, state: ctx.state, changes: ctx.changes,
+          cognition: ctx.cognition, hypotheses: ctx.hypotheses, memory: ctx.memory,
+          evidence: ctx.evidence,
+        },
         { question: 'What do you know about the pricing model?', workstreamId: mine.id },
       )
 
@@ -81,7 +92,11 @@ describe('context packet', () => {
       }
 
       const { packet } = await buildContextPacket(
-        { retrieval: ctx.retrieval, state: ctx.state, changes: ctx.changes },
+        {
+          retrieval: ctx.retrieval, state: ctx.state, changes: ctx.changes,
+          cognition: ctx.cognition, hypotheses: ctx.hypotheses, memory: ctx.memory,
+          evidence: ctx.evidence,
+        },
         { question: 'What do you know about latency?', workstreamId: ws.id, maxProviderItems: 2 },
       )
 

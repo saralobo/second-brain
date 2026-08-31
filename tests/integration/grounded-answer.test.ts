@@ -46,7 +46,7 @@ describe('grounded answering, end to end in mock mode', () => {
       expect(dr).not.toBeNull()
       expect(dr!.groundingValid).toBe(true)
       expect(dr!.promptId).toBe('grounded-answer')
-      expect(dr!.promptVersion).toBe('v1')
+      expect(dr!.promptVersion).toBe('v2')
       expect(dr!.contextHealthState).toBe(res.contextHealth.state)
       expect(dr!.modelRunId).not.toBeNull()
 

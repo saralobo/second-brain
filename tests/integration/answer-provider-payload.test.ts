@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { withTestContext } from '@ava/test-support'
-import { ask, capture } from '@ava/app'
+import { ask, capture, declareCognition, proposeHypothesis } from '@ava/app'
 import { ProviderRegistry } from '@ava/llm'
 import type {
   GenerateRequest, GenerateResult, ModelProvider, ProviderPolicy, Usage,
@@ -129,6 +129,75 @@ describe('the payload that reaches the provider', () => {
       })
 
       expect(payloadOf(provider)).not.toContain('SYSTEMECHO')
+    })
+  })
+
+  it('never sends a behavioural profile of the user', async () => {
+    await withTestContext(async (ctx) => {
+      const ws = await ctx.workstreams.create('Profile', null)
+      const a = await capture(ctx, {
+        workstreamId: ws.id, type: 'note', content: 'Chose the terse deck layout.',
+      })
+      const b = await capture(ctx, {
+        workstreamId: ws.id, type: 'note', content: 'Chose the terse report layout.',
+      })
+      if (!a.ok || !b.ok) throw new Error('setup failed')
+
+      await proposeHypothesis(ctx, {
+        falsifiableDescription: 'In observed layout choices, HYPOTHESISMARKER was picked.',
+        context: 'layout selection',
+        evidenceIds: [a.evidence.id, b.evidence.id],
+        alternativesAvailable: ['dense layout'],
+        workstreamId: ws.id,
+      })
+
+      const provider = new RecordingProvider({
+        answer: `Two layout choices are on record [${a.evidence.id}]`,
+        evidence_ids: [a.evidence.id], uncertainties: [], abstained: false,
+      })
+      const registry = new ProviderRegistry()
+      registry.register('spy', { provider, configured: true, enabled: true, local: true })
+
+      await ask(ctx, { registry, providerName: 'spy' }, {
+        workstreamId: ws.id, question: 'What do you know about the layout choices?',
+      })
+
+      // The hypothesis text is AVA's own inference about the user. It grounds
+      // nothing, so it has no business crossing the boundary.
+      expect(payloadOf(provider)).not.toContain('HYPOTHESISMARKER')
+      // Its existence is disclosed without its content, so the model does not
+      // fill the silence by speculating.
+      expect(payloadOf(provider)).toContain('deliberately withheld')
+    })
+  })
+
+  it('sends a declaration\'s wording only through the redacted evidence block', async () => {
+    await withTestContext(async (ctx) => {
+      const ws = await ctx.workstreams.create('DeclWording', null)
+      const declared = await declareCognition(ctx, {
+        content: 'I prefer DECLAREDWORDING in written summaries.',
+        cognitionType: 'contextual_preference',
+        workstreamId: ws.id,
+      })
+
+      const provider = new RecordingProvider({
+        answer: `Noted [${declared.evidence.id}]`,
+        evidence_ids: [declared.evidence.id], uncertainties: [], abstained: false,
+      })
+      const registry = new ProviderRegistry()
+      registry.register('spy', { provider, configured: true, enabled: true, local: true })
+
+      await ask(ctx, { registry, providerName: 'spy' }, {
+        workstreamId: ws.id, question: 'What do you know about written summaries?',
+      })
+
+      const payload = payloadOf(provider)
+      // The wording travels exactly once, as an evidence item that went
+      // through classification and redaction — not a second time as raw
+      // metadata in the declaration block.
+      expect(payload.split('DECLAREDWORDING')).toHaveLength(2)
+      expect(payload).toContain('DECLARED BY THE USER')
+      expect(payload).toContain(declared.cognition.id)
     })
   })
 
