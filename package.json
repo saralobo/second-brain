@@ -1,0 +1,36 @@
+{
+  "name": "ava",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --build --force",
+    "lint": "node scripts/lint-boundaries.mjs",
+    "test": "vitest run",
+    "test:unit": "vitest run packages",
+    "test:integration": "vitest run tests/integration",
+    "test:golden": "vitest run tests/golden",
+    "db:migrate": "tsx packages/db/src/cli/migrate.ts",
+    "db:reset": "tsx packages/db/src/cli/reset.ts",
+    "db:seed": "tsx packages/app/src/cli/seed.ts",
+    "dev": "npm run dev --workspace @ava/web",
+    "start": "npm run start --workspace @ava/web",
+    "verify": "npm run lint && npm run typecheck && npm run test",
+    "build:web": "npm run build --workspace @ava/web",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2"
+  }
+}

@@ -1,0 +1,18 @@
+# Optional. AVA V0 defaults to embedded PostgreSQL (PGlite) and needs no
+# service running. Use this only when AVA_DB_MODE=server.
+#   docker compose up -d
+#   DATABASE_URL=postgres://ava:ava@localhost:55432/ava AVA_DB_MODE=server npm run db:migrate
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: ava-postgres
+    environment:
+      POSTGRES_USER: ava
+      POSTGRES_PASSWORD: ava
+      POSTGRES_DB: ava
+    ports:
+      - "55432:5432"
+    volumes:
+      - ava-pgdata:/var/lib/postgresql/data
+volumes:
+  ava-pgdata:
