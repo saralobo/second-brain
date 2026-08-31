@@ -1,6 +1,7 @@
 import {
   BehavioralHypothesisRepository, BehavioralObservationRepository, ChangeRepository,
-  CheckpointRepository, OpportunityRepository, PreparedArtifactRepository,
+  CheckpointRepository, FeedbackRepository, OpportunityRepository,
+  OutcomeRepository, PreparedArtifactRepository, UserActionRepository,
   ContextHealthRepository, ConversationRepository, DeclaredCognitionRepository,
   DecisionRecordRepository, EvidenceRepository, MemoryRepository, ModelRunRepository,
   RetrievalRepository, SourceRepository, StateRepository, WorkstreamRepository,
@@ -35,6 +36,9 @@ export interface AppContext {
   checkpoints: CheckpointRepository
   opportunities: OpportunityRepository
   prepared: PreparedArtifactRepository
+  feedback: FeedbackRepository
+  userActions: UserActionRepository
+  outcomes: OutcomeRepository
   telemetry: TelemetryWriter
 }
 
@@ -58,6 +62,9 @@ export function buildContext(db: Database): AppContext {
     checkpoints: new CheckpointRepository(db),
     opportunities: new OpportunityRepository(db),
     prepared: new PreparedArtifactRepository(db),
+    feedback: new FeedbackRepository(db),
+    userActions: new UserActionRepository(db),
+    outcomes: new OutcomeRepository(db),
     telemetry: new TelemetryWriter(db),
   }
 }

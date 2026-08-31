@@ -9,6 +9,7 @@ import type { ExecutionMode } from '@ava/db'
 import type { AppContext } from './context'
 import { callThroughBoundary } from './provider-boundary'
 import { composeMockAnswer } from './answer-composer'
+import { answerInterventionQuestion } from './intervention-answers'
 
 /**
  * Grounded answering (S3-T07, S3-T08, S3-T09).
@@ -155,6 +156,14 @@ export async function ask(ctx: AppContext, deps: AskDeps, req: AskRequest): Prom
   // not a downgrade here, it is the correct implementation.
   if (packet.query.kind === 'personal') {
     return answerPersonallyFromLocalCognition(ctx, req, packet, record, gates)
+  }
+
+  // Questions about AVA's own record of what happened — what the user marked,
+  // what they did, how things ended. Answered from stored rows, rendered
+  // deterministically, and never sent to a provider: feedback notes are the
+  // user's private commentary on her own work.
+  if (packet.query.kind === 'intervention') {
+    return answerFromInterventionRecords(ctx, req, packet, record)
   }
 
   // ---- Provider path ----
@@ -398,6 +407,67 @@ async function answerPersonallyFromLocalCognition(
     groundingFailures: [],
     declaredCognitionIds: verdict.acceptedCognitionIds,
     hypothesisIds: verdict.acceptedHypothesisIds,
+    rejectedAnswer: false,
+  }
+}
+
+/**
+ * Reads back what was recorded after previous interventions.
+ *
+ * Grounding validation does not apply here and is recorded as `null` rather
+ * than as `true`. That check asks whether an answer stayed inside the Context
+ * Packet; this answer does not come from the packet at all — it is a rendering
+ * of feedback, action and outcome rows, and claiming it passed a check that
+ * was never run would be worse than saying it did not apply.
+ */
+async function answerFromInterventionRecords(
+  ctx: AppContext,
+  req: AskRequest,
+  packet: ContextPacket,
+  record: (args: RecordArgs) => Promise<string>,
+): Promise<AskResult> {
+  const composed = await answerInterventionQuestion(ctx, req.workstreamId, req.question)
+
+  const drId = await record({
+    executionMode: 'local_only',
+    provider: null, model: null, modelRunId: null,
+    abstained: false, abstentionReason: null,
+    answer: composed.answer,
+    answerEvidenceIds: [],
+    uncertainties: [
+      'This is a read of what was recorded. It reports facts in sequence and does not claim '
+      + 'that one caused another.',
+    ],
+    groundingValid: null,
+    groundingFailures: [],
+    fallbackUsed: false,
+    errorDetail: null,
+  })
+
+  await ctx.telemetry.record({
+    eventType: 'answer_shown', occurredAt: new Date(),
+    subjectType: 'decision_record', subjectId: drId, workstreamId: req.workstreamId,
+    contextHealth: packet.health.state, decisionRecordId: drId,
+    payload: { kind: 'intervention', opportunities: composed.opportunityIds.length },
+  })
+  await appendChatTurn(ctx, req, drId, composed.answer, false, packet.health.state)
+
+  return {
+    answer: composed.answer,
+    abstained: false,
+    uncertainties: [
+      'This is a read of what was recorded. It reports facts in sequence and does not claim '
+      + 'that one caused another.',
+    ],
+    evidence: [],
+    packet,
+    decisionRecordId: drId,
+    contextHealth: packet.health,
+    executionMode: 'local_only',
+    modelRunId: null,
+    groundingFailures: [],
+    declaredCognitionIds: [],
+    hypothesisIds: [],
     rejectedAnswer: false,
   }
 }

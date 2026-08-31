@@ -30,7 +30,8 @@
     "ask": "tsx packages/app/src/cli/ask.ts",
     "eval:answers": "tsx packages/app/src/cli/answer-eval.ts",
     "cognition": "tsx packages/app/src/cli/cognition.ts",
-    "today": "tsx packages/app/src/cli/today.ts"
+    "today": "tsx packages/app/src/cli/today.ts",
+    "feedback": "tsx packages/app/src/cli/feedback.ts"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
