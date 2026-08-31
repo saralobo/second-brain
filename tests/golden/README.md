@@ -7,14 +7,20 @@ reported or counted as evidence of product validation.** A synthetic scenario
 proves the code does what it was written to do; it says nothing about whether
 the product thesis holds.
 
-Scenarios whose dependencies land in Batch 1 (Slices 0–2):
+Scenarios implemented through Slice 3:
 
 | ID | Scenario | Status |
 | --- | --- | --- |
 | GS-01 | Superseded Decision | implemented |
 | GS-02 | Invalidated Artifact (impact only; the Opportunity half is Slice 5) | partial, impact half |
-| GS-06 | System-origin evidence cannot self-confirm | implemented |
+| GS-03 | Unresolved Question | partial — the chat half; the Opportunity half is Slice 5 |
+| GS-05 | Insufficient Context → Abstention | implemented |
+| GS-06 | System-origin evidence cannot self-confirm | implemented, extended to grounded answering |
 | GS-07 | Entity ambiguity remains unresolved | implemented |
 
-Not implemented here because they depend on later slices: GS-03 (Slice 5),
-GS-04 (Slice 4), GS-05 (Slice 3), GS-08 (Slices 5–6).
+Not implemented here because they depend on later slices: GS-04 (Slice 4),
+GS-08 (Slices 5–6).
+
+GS-05 is the one the implementation plan calls the easiest to let pass by
+accident. It passes only when AVA **refuses** — an answer with a warning
+attached would still be an answer, and that is the failure it exists to catch.

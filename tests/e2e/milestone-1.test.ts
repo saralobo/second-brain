@@ -32,6 +32,15 @@ async function waitForServer(timeoutMs = 40_000): Promise<void> {
   throw new Error('server did not become ready')
 }
 
+/** Refuses to run against a server left behind by an earlier run. */
+async function freePort(): Promise<void> {
+  await new Promise<void>((resolve) => {
+    const p = spawn('sh', ['-c', `lsof -ti tcp:${PORT} | xargs -r kill -9`], { stdio: 'ignore' })
+    p.on('exit', () => resolve())
+  })
+  await new Promise((r) => setTimeout(r, 300))
+}
+
 function run(cmd: string, args: string[], env: Record<string, string>): Promise<void> {
   return new Promise((resolve, reject) => {
     const p = spawn(cmd, args, { cwd: ROOT, env: { ...process.env, ...env }, stdio: 'ignore' })
@@ -43,21 +52,30 @@ beforeAll(async () => {
   if (!existsSync(join(ROOT, 'apps/web/.next'))) {
     throw new Error('run `npm run build:web` before the e2e suite')
   }
+  await freePort()
   rmSync(DATA_DIR, { recursive: true, force: true })
 
   const env = { AVA_PGLITE_DIR: DATA_DIR }
   await run('npx', ['tsx', 'packages/db/src/cli/migrate.ts'], env)
   await run('npx', ['tsx', 'packages/app/src/cli/seed.ts', '--supersede'], env)
 
+  // Detached so the whole process group can be killed: `npx` spawns
+  // `next-server` as a child, and killing the wrapper alone leaves a server
+  // still bound to the port. The next run then silently talks to the stale
+  // server and asserts against yesterday's data.
   server = spawn('npx', ['next', 'start', '--port', String(PORT)], {
     cwd: join(ROOT, 'apps/web'),
     env: { ...process.env, ...env },
     stdio: 'ignore',
+    detached: true,
   })
   await waitForServer()
 }, 120_000)
 
 afterAll(() => {
+  if (server?.pid) {
+    try { process.kill(-server.pid, 'SIGKILL') } catch { /* already gone */ }
+  }
   server?.kill('SIGKILL')
   rmSync(DATA_DIR, { recursive: true, force: true })
 })

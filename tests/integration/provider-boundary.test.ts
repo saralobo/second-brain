@@ -24,6 +24,20 @@ function registryWith(mock: MockModelProvider): ProviderRegistry {
   return r
 }
 
+/**
+ * The same double, registered as a NETWORK-CAPABLE provider.
+ *
+ * The budget gate is skipped for `local: true` entries — an in-process call
+ * has no spend to control. Exercising the ADR-21 caps therefore requires a
+ * provider the registry believes can reach the network, or the test would
+ * pass by taking the path that has no cap in it.
+ */
+function externalRegistryWith(mock: MockModelProvider): ProviderRegistry {
+  const r = new ProviderRegistry()
+  r.register(MOCK_PROVIDER, { provider: mock, configured: true, enabled: true, local: false })
+  return r
+}
+
 const REQ = {
   archetype: 'state_query_answer' as const,
   purpose: 'gate verification',
@@ -161,7 +175,7 @@ describe('budget gate (ADR-21 operational safety caps)', () => {
       const mock = new MockModelProvider(new Map(), 'claude-sonnet-5')
       mock.setResponse('state_query_answer', { ok: true })
       const tiny = { ...CAPS, perCallUsd: 0.0001 }
-      const out = await callThroughBoundary(ctx, { registry: registryWith(mock), caps: tiny },
+      const out = await callThroughBoundary(ctx, { registry: externalRegistryWith(mock), caps: tiny },
         { ...REQ, evidenceIds: [e.id] })
 
       expect(out.ok).toBe(false)
@@ -193,7 +207,7 @@ describe('budget gate (ADR-21 operational safety caps)', () => {
 
       // The cap is lower than what has already been spent today.
       const out = await callThroughBoundary(ctx,
-        { registry: registryWith(mock), caps: { ...CAPS, dailyUsd: 1.00 } },
+        { registry: externalRegistryWith(mock), caps: { ...CAPS, dailyUsd: 1.00 } },
         { ...REQ, evidenceIds: [e.id] })
       expect(out.ok).toBe(false)
       if (!out.ok) {
