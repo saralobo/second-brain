@@ -21,6 +21,17 @@ export type ValidationEventType =
   | 'change_detection_triggered'
   | 'change_detectable_at'
   | 'change_detected'
+  // Slice 3
+  | 'question_received'
+  | 'retrieval_started'
+  | 'retrieval_completed'
+  | 'context_packet_created'
+  | 'provider_call_authorized'
+  | 'provider_call_denied'
+  | 'grounded_answer_generated'
+  | 'grounded_answer_rejected'
+  | 'answer_shown'
+  | 'abstention_shown'
   // Later slices — declared, deliberately not emitted in Batch 1
   | 'opportunity_generated'
   | 'opportunity_shown'
@@ -35,6 +46,23 @@ export const BATCH_1_EVENTS: readonly ValidationEventType[] = [
   'state_projection_triggered', 'change_detection_triggered',
   'change_detectable_at', 'change_detected',
 ] as const
+
+/**
+ * Events Slice 3 is allowed to emit.
+ *
+ * `answer_shown` and `abstention_shown` mean the response was DELIVERED by
+ * the server. They deliberately do not claim the user read it: there is no
+ * client-side observability yet, and `user_seen` stays unemitted rather than
+ * being approximated by delivery.
+ */
+export const SLICE_3_EVENTS: readonly ValidationEventType[] = [
+  'question_received', 'retrieval_started', 'retrieval_completed',
+  'context_packet_created', 'provider_call_authorized', 'provider_call_denied',
+  'grounded_answer_generated', 'grounded_answer_rejected',
+  'answer_shown', 'abstention_shown',
+] as const
+
+const EMITTABLE: readonly ValidationEventType[] = [...BATCH_1_EVENTS, ...SLICE_3_EVENTS]
 
 export interface ValidationEventInput {
   eventType: ValidationEventType
@@ -58,9 +86,9 @@ export class TelemetryWriter {
    * so a lost event stays lost rather than being reconstructed later.
    */
   async record(input: ValidationEventInput): Promise<string> {
-    if (!BATCH_1_EVENTS.includes(input.eventType)) {
+    if (!EMITTABLE.includes(input.eventType)) {
       throw new Error(
-        `event "${input.eventType}" belongs to a later slice and must not be emitted in Batch 1`,
+        `event "${input.eventType}" belongs to a later slice and must not be emitted yet`,
       )
     }
     const id = ulid(input.occurredAt.getTime())

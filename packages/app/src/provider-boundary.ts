@@ -134,7 +134,9 @@ export async function callThroughBoundary<T>(
       reason: policy.reason }
   }
 
-  // 6. Budget gate.
+  // 6. Budget gate. Skipped only for in-process providers, which cannot spend
+  //    anything; every provider that can reach the network passes through it.
+  const isLocal = deps.registry.isLocal(req.providerName)
   const userMessage = req.buildUserMessage(prepared)
   const estimatedInput = estimateTokens(req.system) + estimateTokens(userMessage)
   const model = provider.modelName
@@ -149,7 +151,9 @@ export async function callThroughBoundary<T>(
   ])
 
   const budget = new BudgetController(deps.caps ?? capsFromEnv(), { dailyUsd, monthlyUsd })
-  const decision = budget.authorize(estimated ?? Number.POSITIVE_INFINITY)
+  const decision = isLocal
+    ? { allowed: true as const }
+    : budget.authorize(estimated ?? Number.POSITIVE_INFINITY)
   if (!decision.allowed) {
     // Record the denial: a refused call is data, not a non-event.
     const deniedRunId = await ctx.modelRuns.begin({

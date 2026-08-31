@@ -1,6 +1,8 @@
 import {
-  ChangeRepository, EvidenceRepository, ModelRunRepository, SourceRepository,
-  StateRepository, WorkstreamRepository, migrate, openDatabase, openTestDatabase,
+  ChangeRepository, ContextHealthRepository, ConversationRepository,
+  DecisionRecordRepository, EvidenceRepository, ModelRunRepository, RetrievalRepository,
+  SourceRepository, StateRepository, WorkstreamRepository,
+  migrate, openDatabase, openTestDatabase,
 } from '@ava/db'
 import type { Database } from '@ava/db'
 import { TelemetryWriter } from '@ava/telemetry'
@@ -20,6 +22,10 @@ export interface AppContext {
   state: StateRepository
   changes: ChangeRepository
   modelRuns: ModelRunRepository
+  retrieval: RetrievalRepository
+  decisionRecords: DecisionRecordRepository
+  contextHealth: ContextHealthRepository
+  conversations: ConversationRepository
   telemetry: TelemetryWriter
 }
 
@@ -32,6 +38,10 @@ export function buildContext(db: Database): AppContext {
     state: new StateRepository(db),
     changes: new ChangeRepository(db),
     modelRuns: new ModelRunRepository(db),
+    retrieval: new RetrievalRepository(db),
+    decisionRecords: new DecisionRecordRepository(db),
+    contextHealth: new ContextHealthRepository(db),
+    conversations: new ConversationRepository(db),
     telemetry: new TelemetryWriter(db),
   }
 }
