@@ -827,3 +827,26 @@ Hypotheses H-01..06: NOT TESTED
 ## Next gate
 
 Implement AVA V0 Slice 3 — Chat + Retrieval.
+
+
+---
+
+## Part 4 — Status after Slice 3
+
+Slice 3 was implemented against this gate without changing it. The provider selection,
+policy, safety caps, ModelRun contract and redaction pipeline recorded in Part 3 are
+unchanged.
+
+```text
+Gate status:        IMPLEMENTED — AWAITING CONTROLLED PROVIDER VERIFICATION
+Real external call: NOT EXECUTED — ANTHROPIC_API_KEY unavailable
+Slice 3:            FUNCTIONALLY COMPLETE — REAL PROVIDER VERIFICATION PENDING
+Challenger:         CHALLENGER EVAL DEFERRED UNTIL ADAPTER/EVAL GATE
+```
+
+One defect in the F-01 fix was found during Slice 3 and corrected: the "latest annotation
+wins" ordering depended on a non-monotonic id and could pick the wrong row when two
+annotations landed in the same millisecond. See `slice-3-execution-log.md`, finding F-03.
+
+Running `npm run provider:smoke` with a key remains the only step between this gate and
+`CLOSED — VERIFIED BY CONTROLLED REAL CALL`.

@@ -60,17 +60,18 @@ Verification: `npm run verify` (lint, typecheck, tests) and `npm run test:e2e`.
 | **Decisions** | [docs/decisions/README.md](docs/decisions/README.md) — ADR-21, ADR-22 |
 | **Validation** | [docs/validation/README.md](docs/validation/README.md) · [Prospective Validation Strategy v0.1](docs/validation/prospective-validation-strategy-v0.1.md) |
 | **Technical specification** | [AVA Technical V0 Specification v0.1](docs/specification/ava-technical-v0-specification-v0.1.md) |
-| **Implementation** | [docs/implementation/README.md](docs/implementation/README.md) · [plan](docs/implementation/ava-v0-implementation-plan-v0.1.md) · [Batch 1 log](docs/implementation/batch-1-execution-log.md) |
+| **Implementation** | [docs/implementation/README.md](docs/implementation/README.md) · [plan](docs/implementation/ava-v0-implementation-plan-v0.1.md) · [Batch 1 log](docs/implementation/batch-1-execution-log.md) · [Slice 3 log](docs/implementation/slice-3-execution-log.md) |
 
 ## Repository layout
 
 ```text
-apps/web        Next.js — workstreams, capture, state and changes
+apps/web        Next.js — workstreams, capture, state, changes, chat, why
 packages/core   pure domain: primitives, state, supersession, change, impact (no I/O)
 packages/db     schema, forward-only SQL migrations, repositories
 packages/app    composition root and use cases
 packages/ingestion  three-plane quarantine pipeline
-packages/llm    provider contract, mock provider, budget controller
+packages/llm    provider contract, providers, prompts, budget, boundary policy
+packages/retrieval  lexical retrieval, Context Packet, Context Health signals
 packages/telemetry  validation events, logging with redaction
 tests/          integration, golden scenarios, end-to-end
 docs/           architecture, decisions, specification, validation, implementation
@@ -80,11 +81,10 @@ docs/           architecture, decisions, specification, validation, implementati
 
 | Gate | Blocks |
 | --- | --- |
-| ADR-22 provider selection | the first real external model call |
+| Controlled provider verification | moving the provider gate to `CLOSED — VERIFIED BY CONTROLLED REAL CALL`; needs an API key |
 | ADR-21 Gate B — economic viability | any expansion of scope |
-| Operational safety caps | unset; required before the first real model call |
 | Prospective Validation Protocol | the start of prospective validation |
 
 ## Next gate
 
-Review AVA V0 Batch 1 and prepare the Slice 3 provider gate.
+Review AVA V0 Slice 3 and prepare Slice 4 — Memory + Declared Cognition.
