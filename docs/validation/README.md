@@ -10,13 +10,22 @@ Current strategy:
 PROSPECTIVE INSTRUMENTED VALIDATION
 
 Current product phase:
-V0 FUNCTIONALLY COMPLETE — PROSPECTIVE VALIDATION READINESS
+PROSPECTIVE VALIDATION PROTOCOL DESIGN
+
+AVA V0:
+FUNCTIONALLY COMPLETE
+
+Validation:
+NOT STARTED
 
 Readiness audit:
 READY WITH LIMITATIONS
 
 Prospective Validation Protocol:
-NOT CREATED
+v0.1 DRAFT — PRE-EXECUTION DECISIONS REQUIRED
+
+Pre-execution decisions:
+PENDING — 0 of 24 locked, 18 blocking
 
 Hypotheses:
 H-01 H-02 H-03 H-04 H-05 H-06 — ALL NOT TESTED
@@ -38,7 +47,8 @@ Architecture baseline:
 - **Decision pack:** [Pre-Execution Decisions v0.1](pre-execution-decisions-v0.1.md) — `LOCKED` em 2026-08-30
 - **Current strategy:** [Prospective Validation Strategy v0.1](prospective-validation-strategy-v0.1.md) — `ADOPTED`
 - **Readiness audit:** [Prospective Validation Readiness Audit v0.1](prospective-validation-readiness-audit-v0.1.md) — `READY WITH LIMITATIONS`, 2026-08-31
-- **Prospective Validation Protocol:** `NOT CREATED`
+- **Prospective Validation Protocol:** [v0.1](prospective-validation-protocol-v0.1.md) — `DRAFT — PRE-EXECUTION DECISIONS REQUIRED`
+- **Pre-execution decisions:** [v0.1](prospective-validation-pre-execution-decisions-v0.1.md) — `PENDING`, 0 de 24 travadas
 - **Technical spec:** [AVA Technical V0 Specification v0.1](../specification/ava-technical-v0-specification-v0.1.md) — `DRAFT FOR IMPLEMENTATION PLANNING`
 - **Experiment log:** [sprint-0-experiment-log.md](observations/sprint-0-experiment-log.md) — `BLOCKED — CANDIDATE SOURCE FAILED ELIGIBILITY`
 - **Architecture baseline:** [Architecture Package v0.2 Final](../architecture/architecture-package-v0.2-final.md) — tag `architecture-v0.2-final`
@@ -118,14 +128,18 @@ O protocolo histórico e o decision lock permanecem inalterados e podem fornecer
 
 ## Próximo gate
 
-Criar o Prospective Validation Protocol v0.1.
+Travar as pre-execution decisions da validação prospectiva.
 
-A V0 está `FUNCTIONALLY COMPLETE` e a auditoria de instrumentação concluiu
-`READY WITH LIMITATIONS`: o rastro de evidência reconstrói ponta a ponta a
-partir de registros escritos no momento, sem inferência e sem timestamp
-fabricado. As limitações — nenhuma chamada real de modelo, relações não
-declaradas invisíveis, `user_seen_at` inobservável — estão nomeadas na
-auditoria e devem restringir o escopo do protocolo, não ser contornadas.
+O [protocolo v0.1](prospective-validation-protocol-v0.1.md) está escrito e
+pré-registrado. Ele define dimensões, unidades de análise, métricas primárias e
+secundárias, auditorias de falso negativo, memória e Context Health, o desenho
+de retirada e as regras de composição do veredito — mas **não** escolhe as
+tolerâncias do produto.
 
-**Nenhuma hipótese foi testada.** H-01 a H-06 permanecem `NOT TESTED` e o Gate
-B do ADR-21 permanece `OPEN`.
+Das 24 decisões, 18 bloqueiam o início. Dez são decisões da dona do projeto e
+não foram tomadas em seu nome. Nenhum threshold do estudo retrospectivo foi
+herdado sem argumento explícito de equivalência semântica; a maioria não é
+herdável.
+
+**Nenhuma hipótese foi testada.** H-01 a H-06 permanecem `NOT TESTED`, o Gate B
+do ADR-21 permanece `OPEN`, e nenhuma validação começou.
