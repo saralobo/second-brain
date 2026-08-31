@@ -21,6 +21,10 @@ import type { HealthSignals } from '@ava/db'
  * one of them.
  */
 const MATERIAL: Record<QueryKind, readonly HealthDimensionId[]> = {
+  // An intervention question is answered from AVA's own records of what the
+  // user said and did. Retrieval quality over work evidence has no bearing on
+  // it, so no dimension can decide the aggregate.
+  intervention: [],
   // A personal question turns on what the user actually declared. Retrieval
   // over work evidence is NOT a substitute: behaviour is not a statement of
   // preference, and answering from it would put words in her mouth.
