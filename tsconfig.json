@@ -17,6 +17,9 @@
       "path": "packages/llm"
     },
     {
+      "path": "packages/retrieval"
+    },
+    {
       "path": "packages/app"
     },
     {

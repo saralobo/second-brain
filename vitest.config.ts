@@ -12,6 +12,7 @@ export default defineConfig({
       '@ava/telemetry': r('./packages/telemetry/src/index.ts'),
       '@ava/llm/anthropic': r('./packages/llm/src/providers/anthropic.ts'),
       '@ava/llm': r('./packages/llm/src/index.ts'),
+      '@ava/retrieval': r('./packages/retrieval/src/index.ts'),
       '@ava/app': r('./packages/app/src/index.ts'),
       '@ava/test-support': r('./packages/test-support/src/index.ts'),
     },

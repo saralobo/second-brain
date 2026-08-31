@@ -59,6 +59,30 @@ export class ProviderRegistry {
     return this.entries.get(name)?.enabled ?? false
   }
 
+  /**
+   * Returns a registered provider for INSPECTION only.
+   *
+   * This deliberately skips the authorisation chain and therefore must never
+   * be used to execute a call — `resolve` is the only path to execution. It
+   * exists so a caller can configure a local test double before the boundary
+   * runs, which is a setup concern, not an authorisation one.
+   */
+  peek(name: string): ModelProvider | null {
+    return this.entries.get(name)?.provider ?? null
+  }
+
+  /**
+   * True for a provider that never leaves the process.
+   *
+   * Set only at registration, and only for in-process doubles. It is the one
+   * fact that lets the boundary skip the budget gate: a local call has no
+   * cost to control, so requiring ADR-21 caps for it would block offline
+   * development without protecting anything.
+   */
+  isLocal(name: string): boolean {
+    return this.entries.get(name)?.local ?? false
+  }
+
   names(): string[] {
     return [...this.entries.keys()]
   }

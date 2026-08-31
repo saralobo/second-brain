@@ -42,6 +42,11 @@ const RULES = {
     forbiddenModules: [],
     reason: 'the model layer must not depend on storage',
   },
+  retrieval: {
+    forbiddenPackages: ['@ava/app', '@ava/ingestion'],
+    forbiddenModules: PROVIDER_SDKS,
+    reason: 'retrieval reads storage and domain policy; it must not depend on the application layer or reach a provider SDK',
+  },
   telemetry: { forbiddenPackages: ['@ava/app', '@ava/llm'], forbiddenModules: PROVIDER_SDKS, reason: 'telemetry is transversal' },
   db: { forbiddenPackages: ['@ava/app', '@ava/llm'], forbiddenModules: PROVIDER_SDKS, reason: 'storage must not depend on application or model layers' },
 }
@@ -82,8 +87,9 @@ for (const [pkg, rule] of Object.entries(RULES)) {
   }
 }
 
-// Provider SDKs are banned everywhere except an adapter directory that does
-// not exist yet: the ADR-22 gate is still open.
+// Provider SDKs are confined to the adapter directory. The ADR-22 gate is
+// closed and an adapter now exists, so this rule guards the confinement
+// rather than the absence.
 for await (const file of walk(PKGS)) {
   const src = await readFile(file, 'utf8')
   for (const match of src.matchAll(IMPORT_RE)) {
@@ -92,7 +98,7 @@ for await (const file of walk(PKGS)) {
       if (!file.includes('/llm/src/providers/')) {
         violations.push({
           file: relative(ROOT, file), spec, pkg: 'any',
-          reason: 'provider SDKs are not permitted while the ADR-22 gate is open',
+          reason: 'provider SDKs are confined to packages/llm/src/providers/ (ADR-22)',
         })
       }
     }

@@ -71,3 +71,8 @@ export class MockModelProvider implements ModelProvider {
     return { ...this.total }
   }
 }
+
+/** Type guard, so callers configure the mock without casting. */
+export function isMockProvider(p: unknown): p is MockModelProvider {
+  return p instanceof MockModelProvider
+}
