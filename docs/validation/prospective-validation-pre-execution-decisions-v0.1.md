@@ -1,342 +1,546 @@
 # Prospective Validation Pre-Execution Decisions v0.1
 
 ```text
-Status: PENDING
+Status: LOCKED EXCEPT D-21
 Protocol: prospective-validation-protocol-v0.1.md
 Architecture baseline: Architecture Package v0.2 Final
 AVA V0 status: FUNCTIONALLY COMPLETE
 Validation status: NOT STARTED
-Decisions locked: 0 of 24
-Blocking decisions outstanding: 18
+Decisions locked: 23 of 24
+Blocking decisions outstanding: 1 — D-21 Primary Workstream
+Locked at: 2026-08-31
 ```
 
-> Every decision here is made **before** the first day of validation. A
-> threshold chosen after seeing results is not a threshold; it is a
-> description of the result.
+> Every decision below was fixed **before** the first day of validation and
+> before any observation. A threshold chosen after seeing results is not a
+> threshold; it is a description of the result.
+
+**Nothing here is a result.** No data has been analysed, no hypothesis tested,
+no GO / PIVOT / STOP declared. H-01 … H-06 remain `NOT TESTED`.
 
 ---
 
-## How to read this
+## Lock semantics
 
-| Type | Meaning | Who decides |
-| --- | --- | --- |
-| **A — Methodological default** | a defensible value this protocol proposes | accept or override |
-| **B — Owner product/economic** | depends on what the owner will tolerate | **owner only** |
-| **C — Scope selection** | chosen before day one | owner, informed |
-| **D — Provider gate** | depends on the Anthropic smoke | owner + technical |
+Every locked decision records a final value, its rationale, `locked_at`, its
+lock status and its source.
 
-**Blocking** means validation cannot start until it is `LOCKED`.
-**Non-blocking** can be decided during the warm-up.
-
-| | Count |
+| Source | Meaning |
 | --- | --- |
-| Type A — methodological default proposed | 9 |
-| Type B — owner decision required | 10 |
-| Type C — scope selection | 3 |
-| Type D — provider gate | 2 |
-| **Total** | **24** |
-| Blocking | 18 |
-| Non-blocking | 6 |
+| `METHODOLOGICAL DEFAULT` | proposed by the protocol and accepted |
+| `OWNER DECISION` | chosen by the project owner |
 
-No decision in this document is locked. Nothing may be inherited from the
-retrospective [Pre-Execution Decisions v0.1](pre-execution-decisions-v0.1.md)
-without a written semantic equivalence argument.
+**After validation begins, no locked decision may be changed silently.** A
+change requires a recorded protocol deviation with justification, a new
+protocol version where the change is material, and the original analysis
+reported alongside the revised one (protocol §39).
 
 ---
 
-## Type A — Methodological defaults
+## Counts
+
+| Type | Total | Locked | Pending |
+| --- | --- | --- | --- |
+| A — Methodological default | 9 | 9 | 0 |
+| B — Owner product/economic | 10 | 10 | 0 |
+| C — Scope selection | 3 | 2 | **1 — D-21** |
+| D — Provider gate | 2 | 2 | 0 |
+| **Total** | **24** | **23** | **1** |
+
+**Blocking and outstanding: 1.** Validation cannot start until D-21 is locked.
+
+---
+
+# Type A — Methodological defaults
 
 ### D-01 · Validation period length
-**Question:** how long is the measured window?
-**Recommended:** Option 2 — 1 week warm-up + 7 weeks measured.
-**Alternatives:** Option 1 (1 + 3 weeks) · Option 3 (2 + 10 weeks, two workstreams).
-**Consequence — shorter:** the volume conditions are unlikely to be met, so the
-most probable verdict is `INCONCLUSIVE`. **Longer:** more burden, higher risk
-of abandonment partway, which is worse than a smaller finished study.
-**Note:** the real constraint is event density, not calendar time. Option 2 is
-extended if §6 volume conditions are unmet.
-**Final value:** `PENDING` · **Blocking:** YES
+**Final value:** `1 week warm-up + 7 weeks measured` (Option 2)
+**Rationale:** the binding constraint is event density, not calendar time.
+Seven measured weeks is the shortest window that plausibly contains the §6
+volume conditions while keeping capture burden survivable, and it spans more
+than one work phase so the opportunity classes vary. The window is extended if
+the volume conditions are unmet; it is not shortened because results look good.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
 
 ### D-02 · Warm-up
-**Question:** are the first days warm-up only?
-**Recommended:** yes — 7 days, excluded from primary metrics, retained in full,
-included in the burden trend.
-**Alternatives:** no warm-up · 14 days.
-**Consequence — none:** primary metrics absorb an empty-corpus artefact and an
-interface being learned, both of which flatter or damage the result for reasons
-unrelated to the product. **Longer:** less measured data from an already small
-study.
-**Final value:** `PENDING` · **Blocking:** YES
+**Final value:** `7 days, WARM-UP / DATA COLLECTION ONLY`
+**Rationale:** the corpus starts empty, Declared Cognition is being
+initialised, relations have not been declared, and the interface is being
+learned. Early rates are artefacts of setup, not of the engine. Warm-up data is
+**never deleted**: it is stored and exported identically, excluded from primary
+metrics, and included in the burden trend (the early cost of adoption is a real
+finding), in bug discovery and in the memory audit baseline. The boundary is a
+timestamp recorded before the period begins.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
 
 ### D-03 · False-negative audit sampling
-**Question:** which checkpoints are audited for misses?
-**Recommended:** every fifth closed checkpoint, plus every checkpoint where AVA
-showed nothing.
-**Alternatives:** every third (more coverage, more effort) · weekly by date.
-**Consequence — sparser:** PM-05 loses interpretability. **Denser:** audit
-burden competes with the real work being measured.
-**Note:** the second clause is the important one. A silent checkpoint is where
-a miss is most likely and least visible.
-**Final value:** `PENDING` · **Blocking:** YES
+**Final value:** `every 5th closed checkpoint, plus every checkpoint where AVA showed nothing`
+**Rationale:** sampling by position, never by outcome — auditing only periods
+that felt disappointing would measure disappointment. The second clause is the
+load-bearing one: a silent checkpoint is where a miss is most likely and least
+visible. The schedule is fixed before day one and not adjusted mid-study.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
 
 ### D-04 · Memory audit sampling
-**Question:** how often, and how many objects?
-**Recommended:** every second week, 5 objects, stratified across the five
-memory kinds.
-**Alternatives:** monthly, 10 objects · weekly, 3 objects.
-**Consequence — sparser:** PM-06 becomes anecdote. **Denser:** the audit itself
-becomes a burden the study is trying to measure.
-**Final value:** `PENDING` · **Blocking:** NO — can be set during warm-up
+**Final value:** `every 2nd week, 5 objects, stratified across the five memory kinds`
+**Rationale:** dense enough that PM-06 is more than anecdote, sparse enough that
+the audit does not become a burden the study is trying to measure. Over seven
+measured weeks this yields roughly 15–20 audited objects.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
 
 ### D-05 · Context Health sampling
-**Question:** how many decisions per health state?
-**Recommended:** 5 per state per month, or all where fewer occurred.
-**Alternatives:** 10 per state per month · all decisions under INSUFFICIENT.
-**Consequence — sparser:** PM-07 cannot distinguish a pattern from an incident.
-**Final value:** `PENDING` · **Blocking:** NO
+**Final value:** `5 decisions per health state per month, or all where fewer occurred`
+**Rationale:** enough to distinguish a pattern from an incident. The fallback
+clause matters: `INSUFFICIENT` may be rare, and reporting "all 2 that occurred"
+is honest where inventing a quota is not.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
 
 ### D-06 · Feedback coverage floor
-**Question:** minimum coverage for primary analysis?
-**Recommended:** ≥50% of shown interventions carry at least one dimension.
-**Alternatives:** ≥33% (more permissive) · ≥70% (stricter, risks turning
-feedback into an obligation that changes behaviour).
-**Consequence — lower:** correctness and value rest on a self-selected minority,
-probably the memorable ones. **Higher:** the study pressures the user to answer,
-which changes what is being measured.
-**Final value:** `PENDING` · **Blocking:** YES
+**Final value:** `≥50% of shown interventions carry at least one feedback dimension`
+**Rationale:** below this, correctness and value rest on a self-selected
+minority — probably the memorable ones. Above roughly 70% the study starts
+pressuring the user to answer, which changes the behaviour being measured.
+Below the floor, PM-01 and PM-02 are reported as `INSUFFICIENT COVERAGE` with
+`n` stated, not as failures.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
 
 ### D-07 · Aggregation rule across opportunity types
-**Question:** when may the five classes be aggregated?
-**Recommended:** only when no class exceeds 60% of shown interventions.
-**Alternatives:** never aggregate · aggregate freely with per-class breakdown.
-**Consequence — freer:** an easy class such as `closing_risk`, which fires on a
-recorded date, silently carries the correctness figure for classes that require
-real inference.
-**Final value:** `PENDING` · **Blocking:** NO
+**Final value:** `aggregate only when no single class exceeds 60% of shown interventions`
+**Rationale:** `closing_risk` fires on a recorded date and is nearly always
+"correct", while `unpropagated_decision` requires real inference. An aggregate
+dominated by date arithmetic would look strong while saying nothing about the
+capability the product claims. Above the threshold, results are reported per
+class.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
 
 ### D-08 · Anticipation usefulness rule
-**Question:** what window counts as useful anticipation?
-**Recommended:** `delivery_latency ≥ 1 checkpoint interval` — **inherited**
-from retrospective A-02.
-**Semantic equivalence:** the retrospective value was reconstructed and this one
-is measured, but the rule is derived from cadence rather than being an absolute
-number, so it remains correct under any cadence. The rule transfers; no number
-is being imported.
-**Alternatives:** a fixed absolute (≥24h) · ≥2 intervals (requires slack for
-preparation, not just display).
-**Consequence — looser:** windows the product could never exploit count as
-anticipation, producing a false positive on H-02.
-**Final value:** `PENDING` · **Blocking:** YES
+**Final value:** `delivery_latency ≥ 1 checkpoint interval`
+**Rationale:** inherited from retrospective A-02. **Semantic equivalence:** the
+retrospective value was reconstructed and this one is measured, but the rule is
+derived from cadence rather than being an absolute number, so it stays correct
+under any cadence. The rule transfers; no number is imported. A window is only
+useful if a checkpoint fits inside it.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
 
 ### D-09 · Statistical treatment
-**Question:** descriptive or inferential?
-**Recommended:** **descriptive only.** Counts and ratios, no p-values, no
-confidence intervals, no significance claims.
-**Alternatives:** inferential where `n` allows.
-**Consequence — inferential:** borrowed authority. At N=1, with the builder as
-subject and evaluator, a p-value would describe sampling noise in a design whose
-dominant error is not sampling.
-**Final value:** `PENDING` · **Blocking:** YES
+**Final value:** `DESCRIPTIVE LONGITUDINAL VALIDATION — no p-values, no confidence intervals, no significance claims, no population generalisation`
+**Rationale:** at N=1, with the builder as subject and evaluator, the dominant
+source of error is not sampling. A p-value would describe sampling noise in a
+design whose principal threats are self-evaluation and a single context, and
+would lend borrowed authority to a study that cannot support it. Rates are
+reported as `numerator / denominator (unanswered: n)`, never as bare
+percentages.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
 
 ---
 
-## Type B — Owner decisions
+# Type B — Owner thresholds
 
-> This document does **not** propose values for these. They depend on what the
-> owner is willing to live with, and choosing them here would be a designer
-> deciding the product's tolerances on her behalf.
->
-> Retrospective anchors are shown for orientation only. Adopting one requires a
-> written semantic equivalence argument.
+### D-10 · Epistemic correctness (PM-01, PK-1)
+**Final value:**
+```text
+(correct + partially_correct) / verifiable interventions ≥ 85%
+guardrail: incorrect ≤ 10%
+not_verifiable is EXCLUDED from the denominator and reported separately
+```
+**Rationale:** correctness is the load-bearing dimension — every other finding
+rests on output that can be trusted. Excluding `not_verifiable` from the
+denominator prevents the most self-serving error available here: an
+unverifiable claim inflating either the success or the failure bucket.
 
-### D-10 · Acceptable epistemic correctness (PM-01)
-**Question:** what share of `incorrect` verdicts is tolerable before AVA is not
-worth trusting?
-**Retrospective anchor:** none — the retrospective study had no epistemic
-dimension in this form.
-**Consequence — strict:** a promising system is killed by a handful of errors
-in a small sample. **Loose:** a confidently wrong assistant passes, and every
-other finding rests on output that cannot be trusted.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** YES
+**Interpretation note.** Since `correct + partially_correct + incorrect = 100%`
+of verifiable interventions, the 85% bar alone implies `incorrect ≤ 15%`. The
+guardrail at 10% is therefore the **binding constraint**, and a result can
+satisfy the headline threshold while failing the guardrail. Both are evaluated;
+the guardrail is not decorative.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `OWNER DECISION`
 
-### D-11 · Serious false negative tolerance (PM-05, PK-3)
-**Question:** how many serious misses, over how many audits, before failure?
-**Retrospective anchor:** K-10 — *≥1 in more than one briefing*.
-**Semantic equivalence — NOT established.** The retrospective reviewer had wide
-access and no scope limit; AVA has five classes and only declared relations.
-The §15 definition adds a scope condition precisely so V0's architectural limits
-are not counted as product failures. The old trigger applied to the new
-definition would be stricter than it was originally.
-**Consequence — strict:** the study fails on misses the V0 was never scoped to
-catch. **Loose:** a system that reliably overlooks material work passes.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** YES
+### D-11 · Serious false negatives (PM-05, PK-3)
+**Final value:**
+```text
+maximum 1 serious false negative during the measured period
+AND the same material failure pattern must not occur twice
+```
+Either — 2 or more serious false negatives, or a repetition of the same
+material pattern — **blocks GO**. `PIVOT`, `STOP` or `INCONCLUSIVE` remain
+available depending on the rest of the evidence.
 
-### D-12 · Attention waste tolerance (PM-03, PK-2)
-**Question:** what share of shown items may be `already_known + irrelevant`?
-**Retrospective anchor:** B-05 / K-6 — *≤33% of promoted items*.
-**Semantic equivalence — PARTIAL.** The unit matches (items promoted per
-briefing) and the failure mode is identical — the checkpoint becoming an inbox.
-What differs is the producer: a human with wide access chose those items, AVA
-chooses under Context Health and a top-k cap. Defensible to inherit, but it is
-the owner's call.
-**Consequence — strict:** forces abstention and short briefings; may reject a
-system that would be useful with a smaller top-k. **Loose:** the checkpoint
-becomes an inbox and passes the test while failing in use.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** YES
+**Rationale:** a single miss in seven weeks is a system with limits; a repeated
+pattern is a system with a blind spot, and a blind spot is a design fact rather
+than an accident. Uses the four-condition definition in protocol §15 —
+evidence sufficiency, materiality, V0 scope, consequence. Misses failing any
+condition are **trivial false negatives**, recorded and counted separately.
 
-### D-13 · Valuable intervention rate (PM-02)
-**Question:** what share of briefings must contain ≥1 `valuable` item, and what
-share of interventions must be `valuable`?
-**Retrospective anchor:** B-04 / K-1 — *≥1 useful item in ≥75% of briefings*.
-**Semantic equivalence — NOT established.** That threshold was set against a
-manually produced ideal briefing — the ceiling of achievable value. AVA is the
-floor. Applying a ceiling's bar to a floor would reject the product for not
-being a human with unlimited time, which is not what H-01 asks.
-**Consequence — strict:** STOP on a system that adds real if intermittent
-value. **Loose:** GO on something barely better than reading one's own notes.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** YES
+**Semantic equivalence to retrospective K-10 — NOT INHERITED.** K-10 triggered
+on *≥1 in more than one briefing*, against a human reviewer with wide access
+and no scope limit. The §15 definition adds a scope condition precisely so that
+V0's architectural limits are not counted as product failures. This value is an
+owner decision made against the new definition, not a migration of the old one.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `OWNER DECISION`
+
+### D-12 · Attention waste (PM-03, PK-2)
+**Final value:** `(already_known + irrelevant) / items shown ≤ 33%, per briefing`
+**Rationale:** uses the protocol §13 definition exactly; categories are not
+redefined. The constituent dimensions continue to be reported separately —
+`already_known` is a novelty failure and `irrelevant` is an attention failure,
+and they have different remedies. Above this, the checkpoint becomes an inbox,
+which is the *proactivity noise* failure mode of baseline §33.
+
+**Semantic equivalence to retrospective B-05 / K-6 — PARTIAL, ACCEPTED.** The
+unit matches (items promoted per briefing) and the failure mode is identical.
+What differs is the producer: a human with wide access chose those items,
+whereas AVA chooses under real Context Health and a top-k cap. The owner
+accepted the inheritance on the grounds that the tolerance expresses how much
+noise *she* will accept, which does not depend on who produced it.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `OWNER DECISION`
+
+### D-13 · Valuable intervention rate (PM-02, PK-4)
+**Final value:** `delivery = valuable ≥ 50% of interventions carrying a delivery verdict`
+**Rationale:** the product's claim is that proactive interventions are worth the
+interruption. Half of judged interventions earning `valuable` is a demanding
+but reachable bar for a first version.
+
+**Denominator resolution — recorded rather than assumed.** The instruction read
+"≥50% of shown interventions receive delivery feedback = valuable" while also
+stating that missing feedback is not negative. Those two clauses are
+incompatible: with *shown* as the denominator, every unanswered intervention
+counts against the rate, which is exactly treating missing feedback as
+negative. The only reading satisfying both is **interventions carrying a
+delivery verdict**, which is also the PM-02 definition already in the protocol.
+That reading is locked. Coverage remains governed by D-06, and the briefing-level
+figure (share of briefings with ≥1 valuable item) continues to be reported
+alongside it per protocol §17.
+
+**Semantic equivalence to retrospective B-04 / K-1 — NOT INHERITED.** The 75%
+bar was set against a manually produced ideal briefing — the ceiling of
+achievable value. AVA is the floor.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `OWNER DECISION`
 
 ### D-14 · Cost per useful intervention (PM-08, PK-7)
-**Question:** maximum acceptable cost per useful intervention?
-**Retrospective anchor:** D-01 / K-4 — *US$ 3 per useful intervention*.
-**Semantic equivalence — NOT established.** Set for a study with connectors,
-three source classes and human-produced briefings. Operating conditions differ
-materially.
-**Consequence — strict:** forces micro-batch and narrow scope from the start.
-**Loose:** the cost gate stops being a gate, and baseline §33's *cost explosion*
-passes through.
-**Note:** feeds ADR-21 Gate B. Not measurable under Regime A.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** only under Regime B
+**Final value:** `≤ USD 1.00 per useful intervention`
+**Scope:** applies **only** to the provider-dependent stratum with real
+observed cost. Deterministic interventions cost zero and are excluded from this
+denominator entirely.
+**Rationale:** pooling free deterministic interventions with paid ones would
+understate the real cost of the paid path by an arbitrary factor, and the
+factor grows as the deterministic engine improves — the metric would look
+better precisely as the paid path got relatively worse.
 
-### D-15 · Monthly cost ceiling (PK-7)
-**Question:** maximum monthly spend for AVA at V0 scope?
-**Retrospective anchor:** D-02 / K-4 — *US$ 60/month*.
-**Semantic equivalence — NOT established**, same reasoning as D-14.
-**Consequence:** a scope decision taken by budget, which is legitimate when
-explicit and corrosive when implicit.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** only under Regime B
+**Semantic equivalence to retrospective D-01 / K-4 — NOT INHERITED.** The
+US$ 3 anchor was set for a study with connectors, three source classes and
+human-produced briefings.
+**Measurability:** `NOT MEASURABLE` under Regime A. Reported as such, never as
+zero or as a pass.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `OWNER DECISION`
 
-### D-16 · Capture burden ceiling (PK-8)
-**Question:** how much capture and maintenance time per week is acceptable?
-**Retrospective anchor:** B-06 / K-5 — *≤30 min per checkpoint, with a
-downward trend required*.
-**Semantic equivalence — PARTIAL and inverted.** Retrospectively those minutes
-were *normalization overhead*, a cost to be minimised. In V0, capture is a
-deliberate feature that guarantees a correct `observed_at`. The same minutes
-mean something different, so the number does not transfer — but the **trend
-requirement does**, and is the stronger half of the criterion.
-**Consequence — strict:** H-03 fails early, avoiding a product whose real
-output is data entry. **Loose:** the study approves a system whose maintenance
-is the actual work.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** YES
+### D-15 · Monthly economic ceiling (PK-7)
+**Final value:** `≤ USD 20.00 per month`
+**Rationale:** a validation threshold expressing what the owner will pay for
+AVA at V0 scope.
 
-### D-17 · Memory accuracy tolerance (PM-06, PK-5)
-**Question:** how many audited memory objects may be wrong on content, scope,
-authority or provenance?
-**Retrospective anchor:** none.
-**Consequence — loose:** AVA misremembers what the user declared about herself
-and still passes, which is the failure most corrosive to trust.
-**Note:** consider a stricter bar for **authority** errors than for content —
-mislabelling a hypothesis as a declaration is a different kind of wrong from
-holding a stale preference.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** YES
+**Semantic separation from ADR-21 Gate A — mandatory, and non-obvious because
+the numbers coincide.** The Gate A monthly Operational Safety Cap is also
+US$ 20.00. They are different objects:
+
+| | Gate A monthly cap | D-15 |
+| --- | --- | --- |
+| Purpose | prevent unbounded spend while building | judge economic viability |
+| Enforced by | Budget Controller, at runtime | analysis, after the fact |
+| Meaning if reached | the guardrail worked | the ceiling was tested |
+
+**Interpretation rule, locked.** Because the operational cap and the validation
+ceiling are numerically identical, **observed monthly spend can never exceed
+D-15** — the Budget Controller halts spending first. D-15 therefore cannot fail
+by observation, only by the cap binding. Accordingly:
+
+- if the monthly safety cap is **reached or approached**, D-15 is recorded as
+  `AT CEILING — DEMAND EXCEEDED SUPPLY`, and the *unmet* demand (denied calls,
+  abstentions caused by budget) is reported as the finding;
+- a month that stays below the cap is recorded as `WITHIN CEILING`, and this is
+  **not** evidence that the ceiling is comfortable — only that it was not
+  reached at V0 volume with one user;
+- a cap being reached is **never** reported as economic validation. ADR-21 §Gate A
+  already states that a cap being hit says nothing about whether the cost is
+  acceptable.
+
+**Semantic equivalence to retrospective D-02 / K-4 — NOT INHERITED.**
+**Measurability:** `NOT MEASURABLE` under Regime A.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `OWNER DECISION`
+
+### D-16 · Manual capture burden (PK-8)
+**Final value:** `≤ 60 minutes per week, after warm-up`
+**Also reported, mandatory:** the week-by-week trend · number of captures ·
+relations declared · corrections made · feedback burden.
+
+**Rationale and trend rule.** The mean alone can hide continuous growth: 20, 40
+and 60 minutes averages 40 and passes, while describing a system becoming
+unsustainable. The trend is therefore evaluated as a first-class criterion, not
+a footnote — a rising burden inside the ceiling is reported as a **failure
+signal** for H-03 even when the average passes.
+
+**Semantic equivalence to retrospective B-06 / K-5 — PARTIAL AND INVERTED.**
+Retrospectively those minutes were normalization overhead, a cost to be
+minimised. In V0, capture is a deliberate feature that guarantees a correct
+`observed_at`. The number does not transfer — the ceiling here is double the
+old one, per checkpoint versus per week — but the **trend requirement does**,
+and it is the stronger half of the original criterion.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `OWNER DECISION`
+
+### D-17 · Memory accuracy (PM-06, PK-5)
+**Final value:**
+```text
+≥ 95% of audited memory objects correct on content, scope, authority and provenance
+AND zero critical authority errors
+```
+
+**Critical authority error** — at minimum:
+
+1. AVA stating that the user declared something she never declared;
+2. a behavioural hypothesis presented as a declaration;
+3. a superseded declaration used as current when it should not be;
+4. personal scope applied materially outside its context.
+
+**Any critical authority error blocks GO until analysed.** These are not
+degrees of inaccuracy: each is AVA misrepresenting the user to herself, which
+is the failure most corrosive to trust and the one Slice 4 exists to prevent.
+
+**Interpretation note on granularity.** With D-04 yielding roughly 15–20
+audited objects, the 95% bar is stricter than it appears: at n=17, 16/17 is
+94.1% and fails, so the threshold is effectively **zero content errors** at the
+expected sample size. This is recorded now rather than discovered later, so the
+result is not reinterpreted after the fact. If the audited sample ends below 10
+objects, PM-06 is reported as findings individually per protocol §29 and no
+rate is claimed.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `OWNER DECISION`
 
 ### D-18 · Context Health appropriateness (PM-07, PK-6)
-**Question:** how many unjustified assertions, and how many false abstentions,
-are tolerable?
-**Retrospective anchor:** none.
-**Consequence:** the two are **not** symmetric. An unjustified assertion under
-INSUFFICIENT damages trust in everything AVA says; a false abstention costs one
-intervention. Two separate tolerances are recommended.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** YES
+**Final value:**
+```text
+≥ 90% appropriate behaviour among audited cases
+guardrail: zero unjustified assertions under INSUFFICIENT
+guardrail: zero preparation under INSUFFICIENT
+```
+**Guardrails are not averaged away.** A single unjustified assertion under
+INSUFFICIENT fails D-18 regardless of the headline rate. The four failure
+classes in protocol §20 are counted separately and never netted off: an
+unjustified assertion damages trust in everything AVA says, while a false
+abstention costs one intervention.
 
-### D-19 · Withdrawal design
-**Question:** include withdrawal weeks (Baseline A)?
-**Recommended by the protocol:** yes — one week in four, assigned in advance.
-**Alternatives:** no withdrawal (simpler; loses the only evidence about whether
-proactivity itself adds value) · one week in three.
-**Consequence — without it:** a positive result cannot distinguish "AVA is
-useful" from "having structured notes is useful", which is the product's
-central claim. **With it:** four to eight weeks of real work without proactive
-support.
-**Note:** this is an owner decision because it costs real working weeks, not
-because the methodology is unclear.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** YES
+**Interpretation note.** The second guardrail is currently **enforced
+structurally**: `evaluatePrepare` returns `BLOCKED_BY_HEALTH` whenever context
+is not `HEALTHY`, so preparation under INSUFFICIENT is impossible by
+construction rather than by policy compliance. Its value in this study is
+therefore **regression detection**, not discovery — it confirms the constraint
+held, and would catch a future change that removed it. Recorded so a `zero`
+result is not mistaken for evidence of good judgement.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `OWNER DECISION`
+
+### D-19 · Withdrawal design (Baseline A)
+**Final value:** `YES — withdrawal weeks are Week 3 and Week 6 of the 7 measured weeks`
+
+Non-consecutive, assigned in advance, recorded as dates before the study
+begins.
+
+**During a withdrawal week:**
+
+| Continues | Stops |
+| --- | --- |
+| Capture · Evidence · Change detection · Impact | proactive delivery / briefing |
+| Memory · Declared Cognition · Chat | — |
+| Opportunity **generation and recording** | Opportunity **showing** |
+| feedback and outcome recording | — |
+
+**Preservation rule, locked.** Candidates generated during a withdrawal week
+are retained internally with full generation snapshots. They are **never shown
+retroactively as though they had been delivered during that week**:
+`shown_at` stays null for the withdrawal period, and any later delivery carries
+its own real timestamp. The withheld set is what makes the comparison possible
+— it allows asking what the user missed, or discovered unaided, while
+proactivity was off.
+
+**Override:** if withholding would cause real harm on a given day, the user
+overrides and records a protocol deviation with its reason. Real work outranks
+the study.
+
+**Interpretation limit, locked.** N=1, unblinded, and the user knows which weeks
+are which. The comparison is **descriptive**. No strong causal inference is
+drawn, and no counterfactual claim about what AVA prevented is made.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `OWNER DECISION`
 
 ---
 
-## Type C — Scope selections
+# Type C — Scope selections
 
 ### D-20 · Number of workstreams
-**Question:** one workstream or several?
-**Recommended:** one primary workstream.
-**Consequence — several:** burden multiplies, directly threatening H-03, and
-the volume conditions become harder to reach in each. At N=1 the study cannot
-generalise anyway, so the extra cost buys little.
-**Final value:** `PENDING` · **Blocking:** YES
+**Final value:** `one primary workstream`
+**Rationale:** locked per the recommendation already recorded in this pack.
+Burden multiplies with each additional workstream, directly threatening H-03,
+and the §6 volume conditions become harder to reach in each. At N=1 the study
+cannot generalise regardless, so the extra cost buys little.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
 
 ### D-21 · Which workstream
-**Question:** which specific workstream?
-**Recommended:** none — this requires the owner's knowledge of her own work.
-**Locked selection criteria** (fixed before choosing, so the choice cannot be
-made to flatter the result): active for the whole window · produces real
-decisions and artifacts · has at least one dependency that can be declared
-honestly · not so sensitive that capture would be self-censored.
-**Consequence:** a quiet workstream yields too few changes and the study ends
-`INCONCLUSIVE` for lack of events rather than lack of value.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** YES
+**Final value:** `OWNER INPUT REQUIRED — NOT LOCKED`
+
+This requires the owner's knowledge of her own work and is deliberately not
+filled with a placeholder. **`AVA development` is explicitly excluded as a
+default** — validating a proactive work assistant on the project that built it
+would measure the tool against its own construction, where every change is
+already known to the user and the dependencies live in her head rather than in
+the ledger.
+
+**Selection criteria — LOCKED.** Fixed now, so the choice cannot later be made
+to flatter the result. The selected workstream must be:
+
+1. **real** — actual work with actual consequences;
+2. **active** throughout most of the validation window;
+3. **external to the AVA project itself**;
+4. **expected to last** for the majority of the measured period;
+5. **dynamic enough** to contain decisions, changes, artifacts and commitments;
+6. **legitimate to capture** within the privacy constraints of ADR-22;
+7. **not chosen because it is expected to make AVA look good.**
+
+**Consequence of a poor choice:** a quiet workstream produces too few changes,
+and the study ends `INCONCLUSIVE` for lack of events rather than for lack of
+value — which costs eight weeks and answers nothing.
+**Status:** `PENDING` · **Blocking:** **YES**
 
 ### D-22 · Checkpoint cadence
-**Question:** how often is a checkpoint closed?
-**Recommended:** daily on working days, at a consistent time.
-**Alternatives:** twice daily · per meeting · on resumption.
-**Consequence:** cadence defines the D-08 anticipation rule and the PM-03
-denominator, so it cannot be changed mid-study without a protocol deviation.
-**Note:** baseline §34 nº 8 lists ideal cadence as an open question. This study
-fixes one cadence in order to measure anything; finding the ideal is later work.
-**Final value:** `PENDING` · **Blocking:** YES
+**Final value:** `daily on working days, at a consistent time`
+**Rationale:** locked per the recommendation already recorded in this pack.
+Cadence defines the D-08 anticipation rule and the PM-03 denominator, so it
+cannot change mid-study without a protocol deviation. Baseline §34 nº 8 lists
+ideal cadence as an open question; this study fixes one cadence in order to
+measure anything, and finding the ideal remains later work.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
 
 ---
 
-## Type D — Provider gate
+# Type D — Provider gate
 
 ### D-23 · Provider regime
-**Question:** start under Regime A (deterministic) or wait for Regime B?
-**Recommended:** start under Regime A; move to Regime B mid-study if the smoke
-passes, recording the boundary.
-**Consequence — waiting for B:** the study is delayed for a component that is
-not the architecture's distinctive claim; change → impact → opportunity needs
-no model. **Starting with A:** H-05 stays `NOT TESTED` and Gate B stays `OPEN`
-unless the regime changes.
-**Note:** safe to switch mid-study only because `execution_mode` is recorded per
-decision, so the periods can be separated rather than pooled.
-**Final value:** `PENDING` · **Blocking:** YES
+**Final value:** `start under Regime A; move to Regime B mid-study if provider:smoke = PASS`
 
-### D-24 · Anthropic smoke during v0.1
-**Question:** attempt the controlled CLASS 0 smoke during this study?
-**Recommended:** yes if a key is available; it is cheap, bounded by the Gate A
-caps, and it is the only route to H-05.
-**Consequence — not attempting:** ADR-21 Gate B stays `OPEN` indefinitely, and
-no scope expansion is authorised regardless of how the study turns out.
-**Final value:** `OWNER DECISION REQUIRED` · **Blocking:** NO for Regime A ·
-YES for Regime B
+**Regime A — may start without a real provider call.** Validates: Evidence ·
+Change · Impact · Opportunity · attention and top-k · deterministic briefing ·
+memory · cognition · feedback · outcomes · burden · Context Health behaviour.
+
+**Regime B — may start only after `provider:smoke = PASS` on CLASS 0 synthetic
+data.** Adds: grounded answer quality · preparation quality · real cost · real
+latency.
+
+**Rationale:** the deterministic loop is where the architecture's distinctive
+claim lives — change → impact → opportunity is the thesis and needs no model.
+Delaying the study for a component that is not the thesis would cost weeks for
+nothing. Switching mid-study is safe here **only because `execution_mode` is
+recorded per decision**, so the two periods can be separated in analysis
+instead of silently pooled.
+
+**Locked conditions:**
+
+- the regime boundary is recorded as a **version boundary** with a timestamp
+  (protocol §32);
+- every metric crossing the boundary is reported **per regime** as well as
+  pooled;
+- deterministic and provider-dependent cost and latency are **never mixed**;
+- the provider quality substudy (protocol §23) stays **separate** from the
+  longitudinal product-value study.
+
+**Under Regime A:** H-05 stays `NOT TESTED`, ADR-21 Gate B stays `OPEN`, and
+D-14 and D-15 are reported `NOT MEASURABLE`.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `METHODOLOGICAL DEFAULT`
+
+### D-24 · Attempt the Anthropic smoke during v0.1
+**Final value:** `YES`
+**Rationale:** it is the only route to H-05 and to closing ADR-21 Gate B. It is
+cheap, bounded by the Gate A caps, and uses CLASS 0 synthetic data only, so it
+risks nothing real. Not attempting it would leave Gate B open indefinitely and
+authorise no scope expansion whatever the study shows.
+**Condition:** requires `ANTHROPIC_API_KEY`. If unavailable, the study proceeds
+under Regime A and this is recorded as an unmet condition, not as a failure.
+**locked_at:** 2026-08-31 · **Status:** `LOCKED` · **Source:** `OWNER DECISION`
 
 ---
 
-## Blocking summary
+## GO / PIVOT / STOP combination rule — LOCKED
 
-| Blocking and outstanding | 18 |
-| --- | --- |
-| Non-blocking | 6 (D-04, D-05, D-07, D-14, D-15, D-24 — the last three conditional on regime) |
+There is **no AVA Score**. No single primary metric grants GO.
 
-**Validation cannot start while any blocking decision is `PENDING`.**
+### GO requires, at minimum
 
-Once locked, changing any of them is a protocol deviation under §39 of the
-protocol: it requires a new protocol version, and the original analysis is
-still reported.
+All of the following PASS:
+
+`D-10` correctness · `D-11` serious false-negative guardrail ·
+`D-12` attention waste · `D-13` valuable intervention rate ·
+`D-16` capture burden · `D-17` memory accuracy and authority safety ·
+`D-18` Context Health appropriateness
+
+**and** no methodological integrity failure that invalidates the results.
+
+When Regime B is in scope, `D-14` and `D-15` must additionally be interpreted
+for the **provider-dependent stratum**.
+
+**A metric that is `NOT MEASURABLE` or `INSUFFICIENT COVERAGE` cannot PASS.** It
+is reported as open, and the corresponding hypothesis stays `NOT TESTED`. A GO
+reached under Regime A is a GO **for the deterministic thesis only**: it does
+not close ADR-21 Gate B, does not authorise scope expansion, and does not test
+H-05.
+
+### PIVOT
+
+Value exists, but a specific mechanism fails. Representative shapes:
+
+- high correctness with high `already_known` → the timing or the novelty
+  estimate is wrong, not the reasoning;
+- useful interventions with excessive manual burden → the value is real and the
+  input cost is not sustainable;
+- good opportunities with poor timing → cadence or delivery latency;
+- memory useful while the opportunity policy is noisy → the attention layer,
+  not the knowledge layer.
+
+### STOP
+
+Only when the central thesis of incremental value has been **sufficiently
+tested** and fails materially, or when trust, safety or burden make the
+direction unjustifiable regardless of measured value.
+
+### INCONCLUSIVE
+
+Insufficient sample · insufficient feedback coverage · insufficient events ·
+a measurement bug · inadequate context · a materially compromised protocol.
+
+**INCONCLUSIVE is never converted into GO or PIVOT by narrative preference.** It
+is a legitimate outcome and is reported as itself.
+
+---
+
+## Sample interpretation — LOCKED
+
+The minimum sample requirements in protocol §29 are preserved unchanged. The
+study is `DESCRIPTIVE LONGITUDINAL VALIDATION` at N=1. No p-values, no
+confidence intervals, no claim of population generalisation.
+
+---
+
+## Protocol correction made during this lock
+
+**PM-04 minimum sample condition was unsatisfiable by construction.** It read
+*"≥10 changes with a `system_clock` detectable time"*. In V0,
+`change_detectable_at` is always written with `time_basis = reported`, because
+`REPORTED_TIME_EVENTS` includes it unconditionally and no caller overrides it —
+every detectable time is a user assertion, since capture is manual. The
+condition could therefore never be met, and PM-04 would have been permanently
+unreportable.
+
+Corrected before locking to *"≥10 changes with a recorded detectable time,
+reported by `time_basis` stratum"*. The segmentation mechanism stays in place
+for when connectors arrive and produce genuine `system_clock` detectable times.
+
+This is a **pre-execution correction**, not a protocol deviation: it was made
+before the study started and before any observation.
 
 ---
 
 ## Next gate
 
-`Lock Prospective Validation pre-execution decisions`
+`Select and lock Primary Validation Workstream`

@@ -1,11 +1,12 @@
 # AVA Prospective Validation Protocol v0.1
 
 ```text
-Status: DRAFT — PRE-EXECUTION DECISIONS REQUIRED
+Status: PRE-EXECUTION LOCK IN PROGRESS — PRIMARY WORKSTREAM REQUIRED
 Architecture baseline: Architecture Package v0.2 Final
 AVA V0 status: FUNCTIONALLY COMPLETE
 Validation strategy: PROSPECTIVE INSTRUMENTED VALIDATION
 Validation schema: v0.1
+Pre-execution decisions: 23 of 24 LOCKED — D-21 Primary Workstream outstanding
 ```
 
 > Define the pre-registered prospective evaluation of AVA using longitudinal
@@ -512,6 +513,14 @@ caught it first`. None is supported by the available observations.
 **Permitted:** `time until AVA delivered`, `detection latency`,
 `delivery latency`.
 
+**Note on the V0 stratum.** `change_detectable_at` is currently written with
+`time_basis = reported` in every case, because capture is manual and the
+detectable time is always the user's assertion about when something happened.
+The segmentation rule above is therefore degenerate today — one stratum — and
+stays in place for when connectors produce genuine `system_clock` detectable
+times. This was corrected before locking: the original PM-04 sample condition
+required a `system_clock` stratum that cannot exist in V0.
+
 **Usefulness threshold.** A window is only useful if a checkpoint fits inside
 it — an anticipation of two hours is worthless at a daily cadence. Inherited
 from the retrospective A-02 as `delivery_latency ≥ 1 checkpoint interval`.
@@ -747,9 +756,9 @@ worth.
 
 Baseline A is implemented as **withdrawal**, not as a parallel arm.
 
-**Design:** in the measured period, the briefing is withheld on a pre-assigned
-schedule — recommended **one week in four**, chosen before the study starts and
-recorded as dates.
+**Design — LOCKED (D-19).** In the 7 measured weeks, the briefing is withheld
+during **Week 3 and Week 6** — non-consecutive, assigned in advance, recorded
+as dates before the study begins.
 
 **Rules:**
 - withdrawal weeks are assigned in advance, never chosen because a week looks
@@ -767,7 +776,10 @@ recorded as dates.
 which. This is suggestive evidence about whether proactivity is missed, not a
 controlled comparison, and will be reported as such.
 
-**`OWNER DECISION REQUIRED`** on whether to include withdrawal at all.
+**Locked as `YES`** (D-19). Candidates generated during a withdrawal week are
+retained with full generation snapshots and are **never shown retroactively as
+though they had been delivered during that week**: `shown_at` stays null for the
+withdrawal period, and any later delivery carries its own real timestamp.
 
 ---
 
@@ -821,7 +833,7 @@ borrowed authority to a design that cannot support it.
 | PM-01 | ≥15 interventions with an epistemic verdict | report counts only, no rate |
 | PM-02 | ≥15 with a delivery verdict **and** ≥20 briefings | counts only |
 | PM-03 | ≥20 briefings | counts only |
-| PM-04 | ≥10 changes with a `system_clock` detectable time | report the distribution, no median |
+| PM-04 | ≥10 changes with a recorded detectable time, reported by `time_basis` stratum | report the distribution, no median |
 | PM-05 | ≥4 audited checkpoints | report findings individually |
 | PM-06 | ≥10 audited memory objects | report findings individually |
 | PM-07 | ≥5 decisions per health state | report findings individually |
@@ -873,11 +885,31 @@ No weighted score. The verdict follows explicit precedence.
 close ADR-21 Gate B, does not authorise scope expansion, and does not test
 H-05.
 
-### Acceptability thresholds
+### Acceptability thresholds — LOCKED
 
-**`OWNER DECISION REQUIRED`** for every "acceptable" above. This document
-defines the *structure* of the verdict; the tolerances belong to the person who
-will live with the result. They are enumerated in the decision pack.
+Every tolerance is now fixed in the
+[decision pack](prospective-validation-pre-execution-decisions-v0.1.md).
+
+| Metric | Threshold | Decision |
+| --- | --- | --- |
+| PM-01 correctness | `(correct + partially_correct) ≥ 85%` of verifiable; `incorrect ≤ 10%`; `not_verifiable` excluded from the denominator | D-10 |
+| PM-02 valuable rate | `valuable ≥ 50%` of interventions carrying a delivery verdict | D-13 |
+| PM-03 attention waste | `(already_known + irrelevant) ≤ 33%` of items shown, per briefing | D-12 |
+| PM-05 serious false negatives | `≤ 1` in the measured period, and no repeated material pattern | D-11 |
+| PM-06 memory accuracy | `≥ 95%`, and **zero critical authority errors** | D-17 |
+| PM-07 Context Health | `≥ 90%` appropriate; zero unjustified assertions and zero preparation under INSUFFICIENT | D-18 |
+| PM-08 cost per useful intervention | `≤ USD 1.00`, provider-dependent stratum only | D-14 |
+| Capture burden | `≤ 60 min/week` after warm-up, **with the trend evaluated separately** | D-16 |
+| Monthly ceiling | `≤ USD 20.00/month`, semantically distinct from the ADR-21 Gate A cap of the same value | D-15 |
+
+### GO requires, at minimum
+
+All of `D-10`, `D-11`, `D-12`, `D-13`, `D-16`, `D-17`, `D-18` PASS, **and** no
+methodological integrity failure that invalidates the results. Under Regime B,
+`D-14` and `D-15` must additionally be interpreted for the provider-dependent
+stratum.
+
+A metric that is `NOT MEASURABLE` or `INSUFFICIENT COVERAGE` **cannot PASS**.
 
 ---
 
@@ -888,23 +920,26 @@ retrospective number automatically.**
 
 | ID | Criterion | Trigger | Threshold |
 | --- | --- | --- | --- |
-| **PK-1** | Factual error rate | `incorrect` share of verdicts exceeds tolerance | `OWNER` |
-| **PK-2** | Persistent attention waste | PM-03 above tolerance in the majority of briefings | `OWNER` |
-| **PK-3** | Serious false negatives | serious misses recurring across audits | `OWNER` |
-| **PK-4** | Proactivity without incremental value | withdrawal weeks indistinguishable from active weeks, or `already_known` dominating | `OWNER` |
-| **PK-5** | Memory corruption | memory audit finds wrong scope, wrong authority or unreachable evidence beyond tolerance | `OWNER` |
-| **PK-6** | Context Health too permissive | unjustified assertions recurring under DEGRADED or INSUFFICIENT | `OWNER` |
-| **PK-7** | Unviable cost | cost/useful_intervention or monthly cost above tolerance, in all modes | `OWNER` |
-| **PK-8** | Unviable capture burden | maintenance time exceeding plausible time saved, with no downward trend | `OWNER` |
-| **PK-9** | Perceived surveillance | qualitative — no numeric threshold | qualitative |
+| **PK-1** | Factual error rate | `incorrect > 10%` of verifiable interventions | `LOCKED` (D-10) |
+| **PK-2** | Persistent attention waste | PM-03 `> 33%` in the majority of briefings | `LOCKED` (D-12) |
+| **PK-3** | Serious false negatives | `≥ 2` in the period, or the same material pattern twice | `LOCKED` (D-11) |
+| **PK-4** | Proactivity without incremental value | `valuable < 50%` of judged interventions, or withdrawal weeks indistinguishable from active ones | `LOCKED` (D-13, D-19) |
+| **PK-5** | Memory corruption | accuracy `< 95%`, or **any** critical authority error | `LOCKED` (D-17) |
+| **PK-6** | Context Health too permissive | any unjustified assertion or any preparation under INSUFFICIENT; appropriateness `< 90%` | `LOCKED` (D-18) |
+| **PK-7** | Unviable cost | `> USD 1.00` per useful intervention, or the monthly ceiling reached with demand unmet | `LOCKED` (D-14, D-15) |
+| **PK-8** | Unviable capture burden | `> 60 min/week` after warm-up, **or** a rising trend inside the ceiling | `LOCKED` (D-16) |
+| **PK-9** | Perceived surveillance | qualitative — no numeric threshold | `LOCKED` (qualitative) |
 
 PK-9 stays qualitative, matching the historical K-9 decision. A number here
 would be false precision about a feeling, and the failure mode it guards
 against — the user quietly stopping — shows up in usage, not in a rate.
 
-**Reference anchors** from the retrospective study are listed in the decision
-pack for orientation only. Any that is adopted must carry a written semantic
-equivalence argument, per §2.
+**Inheritance record.** Of the retrospective thresholds, exactly two were
+adopted, each with a written semantic equivalence argument in the decision pack:
+D-08 (the anticipation rule, which transfers because it derives from cadence
+rather than importing a number) and D-12 (attention waste, where the unit and
+the failure mode match). D-11, D-13, D-14, D-15 and D-16 were **not** inherited;
+each records why the retrospective context differs materially.
 
 ---
 
@@ -1059,11 +1094,16 @@ GO / PIVOT / STOP with reasoning.
 All decisions required before the first day are enumerated in
 [Prospective Validation Pre-Execution Decisions v0.1](prospective-validation-pre-execution-decisions-v0.1.md).
 
-Status: `PENDING`. Validation does not start until every blocking decision is
-`LOCKED`.
+Status: **23 of 24 `LOCKED`** as of 2026-08-31. One blocking decision remains
+outstanding — **D-21, the primary workstream** — which requires the owner's
+knowledge of her own work and is deliberately not filled with a placeholder.
+Its selection criteria are themselves locked, so the choice cannot later be
+made to flatter the result.
+
+Validation does not start until D-21 is `LOCKED`.
 
 ---
 
 ## 42. Next gate
 
-`Lock Prospective Validation pre-execution decisions`
+`Select and lock Primary Validation Workstream`
