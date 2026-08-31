@@ -35,6 +35,12 @@ export interface DecisionRecordInput {
   abstentionReason: string | null
   fallbackUsed: boolean
   errorDetail: string | null
+  /** Cognition actually applied (Slice 4 brief §27). */
+  declaredCognitionIds?: readonly string[]
+  hypothesisIds?: readonly string[]
+  knowledgeIds?: readonly string[]
+  cognitiveAuthority?: string | null
+  scopeMatch?: Record<string, unknown>
 }
 
 export interface DecisionRecordRow {
@@ -63,6 +69,11 @@ export interface DecisionRecordRow {
   abstentionReason: string | null
   fallbackUsed: boolean
   errorDetail: string | null
+  declaredCognitionIds: string[]
+  hypothesisIds: string[]
+  knowledgeIds: string[]
+  cognitiveAuthority: string | null
+  scopeMatch: Record<string, unknown>
   decidedAt: Date
 }
 
@@ -91,6 +102,14 @@ export interface SerialisedPacket {
   conflicts: string[]
   gaps: string[]
   providerEligibleEvidenceIds: string[]
+  declaredCognition: {
+    cognitionId: string; content: string; cognitionType: string
+    scopeDescription: string; matchReason: string; authority: string
+  }[]
+  behavioralHypotheses: {
+    hypothesisId: string; falsifiableDescription: string; context: string; status: string
+  }[]
+  stabilizedKnowledge: { memoryRecordId: string; title: string; strength: string }[]
 }
 
 export function serialisePacket(p: ContextPacket): SerialisedPacket {
@@ -120,6 +139,17 @@ export function serialisePacket(p: ContextPacket): SerialisedPacket {
     conflicts: [...p.conflicts],
     gaps: [...p.gaps],
     providerEligibleEvidenceIds: [...p.providerEligibleEvidenceIds],
+    declaredCognition: p.declaredCognition.map((c) => ({
+      cognitionId: c.cognitionId, content: c.content, cognitionType: c.cognitionType,
+      scopeDescription: c.scopeDescription, matchReason: c.matchReason, authority: c.authority,
+    })),
+    behavioralHypotheses: p.behavioralHypotheses.map((h) => ({
+      hypothesisId: h.hypothesisId, falsifiableDescription: h.falsifiableDescription,
+      context: h.context, status: h.status,
+    })),
+    stabilizedKnowledge: p.stabilizedKnowledge.map((k) => ({
+      memoryRecordId: k.memoryRecordId, title: k.title, strength: k.strength,
+    })),
   }
 }
 
@@ -135,8 +165,9 @@ export class DecisionRecordRepository {
          context_health_id, context_health_state,
          provider, model, prompt_id, prompt_version, model_run_id, execution_mode,
          grounding_valid, grounding_failures, answer, answer_evidence_ids,
-         uncertainties, abstained, abstention_reason, fallback_used, error_detail
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)`,
+         uncertainties, abstained, abstention_reason, fallback_used, error_detail,
+         declared_cognition_ids, hypothesis_ids, knowledge_ids, cognitive_authority, scope_match
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31)`,
       [
         id, input.kind, input.workstreamId, input.request, input.queryKind,
         JSON.stringify(input.retrievalResultIds),
@@ -150,6 +181,11 @@ export class DecisionRecordRepository {
         input.answer, JSON.stringify(input.answerEvidenceIds),
         JSON.stringify(input.uncertainties), input.abstained, input.abstentionReason,
         input.fallbackUsed, input.errorDetail,
+        JSON.stringify(input.declaredCognitionIds ?? []),
+        JSON.stringify(input.hypothesisIds ?? []),
+        JSON.stringify(input.knowledgeIds ?? []),
+        input.cognitiveAuthority ?? null,
+        JSON.stringify(input.scopeMatch ?? {}),
       ],
     )
     return id
@@ -198,6 +234,11 @@ function toRecord(r: Record<string, unknown>): DecisionRecordRow {
     abstentionReason: r.abstention_reason ? String(r.abstention_reason) : null,
     fallbackUsed: Boolean(r.fallback_used),
     errorDetail: r.error_detail ? String(r.error_detail) : null,
+    declaredCognitionIds: (r.declared_cognition_ids ?? []) as string[],
+    hypothesisIds: (r.hypothesis_ids ?? []) as string[],
+    knowledgeIds: (r.knowledge_ids ?? []) as string[],
+    cognitiveAuthority: r.cognitive_authority ? String(r.cognitive_authority) : null,
+    scopeMatch: (r.scope_match ?? {}) as Record<string, unknown>,
     decidedAt: new Date(r.decided_at as string),
   }
 }

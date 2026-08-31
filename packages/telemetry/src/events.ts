@@ -32,6 +32,18 @@ export type ValidationEventType =
   | 'grounded_answer_rejected'
   | 'answer_shown'
   | 'abstention_shown'
+  // Slice 4
+  | 'cognition_declared'
+  | 'cognition_confirmed'
+  | 'cognition_corrected'
+  | 'cognition_contextualized'
+  | 'cognition_superseded'
+  | 'cognition_revoked'
+  | 'hypothesis_created'
+  | 'hypothesis_rejected'
+  | 'hypothesis_conflict_recorded'
+  | 'knowledge_promoted'
+  | 'memory_view_rebuilt'
   // Later slices — declared, deliberately not emitted in Batch 1
   | 'opportunity_generated'
   | 'opportunity_shown'
@@ -62,7 +74,23 @@ export const SLICE_3_EVENTS: readonly ValidationEventType[] = [
   'answer_shown', 'abstention_shown',
 ] as const
 
-const EMITTABLE: readonly ValidationEventType[] = [...BATCH_1_EVENTS, ...SLICE_3_EVENTS]
+/**
+ * Events Slice 4 is allowed to emit.
+ *
+ * Every one of them corresponds to an action that actually happened —
+ * a declaration written, a correction made, a view rebuilt. There is no event
+ * for "AVA inferred a preference", because inferring one is not permitted.
+ */
+export const SLICE_4_EVENTS: readonly ValidationEventType[] = [
+  'cognition_declared', 'cognition_confirmed', 'cognition_corrected',
+  'cognition_contextualized', 'cognition_superseded', 'cognition_revoked',
+  'hypothesis_created', 'hypothesis_rejected', 'hypothesis_conflict_recorded',
+  'knowledge_promoted', 'memory_view_rebuilt',
+] as const
+
+const EMITTABLE: readonly ValidationEventType[] = [
+  ...BATCH_1_EVENTS, ...SLICE_3_EVENTS, ...SLICE_4_EVENTS,
+]
 
 export interface ValidationEventInput {
   eventType: ValidationEventType

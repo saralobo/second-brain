@@ -51,7 +51,41 @@ export const GROUNDED_ANSWER_V1: PromptDefinition = {
   ].join('\n'),
 }
 
-const REGISTERED: readonly PromptDefinition[] = [GROUNDED_ANSWER_V1]
+/**
+ * v2 adds the authority rules Slice 4 introduced.
+ *
+ * v1 is NOT edited. A ModelRun that records `grounded-answer/v1` must keep
+ * meaning what it meant when it ran, and an eval comparing two runs is
+ * worthless if the prompt behind a version can change underneath it.
+ */
+export const GROUNDED_ANSWER_V2: PromptDefinition = {
+  id: 'grounded-answer',
+  version: 'v2',
+  archetype: 'state_query_answer',
+  purpose: 'answer a question about a workstream or the user\'s own declared cognition,' +
+    ' using only the supplied context and respecting the authority of each part',
+  schema: '{ "answer": string, "evidence_ids": string[], "uncertainties": string[], "abstained": boolean }',
+  system: [
+    ...GROUNDED_ANSWER_V1.system.split('\n').slice(0, -4),
+    '9. The context comes in parts with DIFFERENT authority, and you must not blur them:',
+    '   - DECLARED BY THE USER: things she stated herself. You may write "you told me X".',
+    '   - EVIDENCE-BACKED KNOWLEDGE: supported by the record. Report it as evidence, not as her words.',
+    '   - HYPOTHESES: your own guesses. You may write "I have a hypothesis that X may apply in Y".',
+    '     You may NEVER write "you prefer X", "you always X" or "your principle is X" on this basis.',
+    '     Saying it that way would put your inference into her mouth.',
+    '10. A declaration applies only inside the scope shown next to it. If the question is about a',
+    '    different context, say the declaration does not cover it rather than stretching it.',
+    '11. A superseded declaration describes what she used to think. Never present it as current.',
+    '',
+    'Cite declarations and hypotheses by their id in "evidence_ids", exactly like evidence.',
+    '',
+    'Return JSON matching exactly:',
+    '{ "answer": string, "evidence_ids": string[], "uncertainties": string[], "abstained": boolean }',
+    'Return no other fields and no text outside the JSON object.',
+  ].join('\n'),
+}
+
+const REGISTERED: readonly PromptDefinition[] = [GROUNDED_ANSWER_V1, GROUNDED_ANSWER_V2]
 
 export class PromptRegistry {
   private readonly byKey = new Map<string, PromptDefinition>()
