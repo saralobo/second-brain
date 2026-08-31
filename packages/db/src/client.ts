@@ -42,6 +42,16 @@ export interface Database {
   query<T = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<QueryResult<T>>
   exec(sql: string): Promise<void>
   close(): Promise<void>
+  /**
+   * A consistent snapshot of the whole database, as a tarball.
+   *
+   * Deviation D-02 accepted PGlite for V0 and deferred DURABILITY to this
+   * point. Prospective validation depends on a longitudinal record surviving
+   * months of real use, and until now a single lost directory would have taken
+   * the entire evidence trail with it — which is not a data-loss inconvenience
+   * but the loss of the study.
+   */
+  dump(): Promise<Uint8Array>
 }
 
 class PGliteDatabase implements Database {
@@ -58,6 +68,11 @@ class PGliteDatabase implements Database {
 
   async close(): Promise<void> {
     await this.db.close()
+  }
+
+  async dump(): Promise<Uint8Array> {
+    const file = await this.db.dumpDataDir('gzip')
+    return new Uint8Array(await file.arrayBuffer())
   }
 }
 
@@ -76,6 +91,24 @@ export async function openDatabase(options: OpenOptions = {}): Promise<Database>
   }
   const dir = options.dataDir ?? process.env.AVA_PGLITE_DIR ?? '.pgdata'
   const pg = new PGlite(resolveDataDir(dir))
+  await pg.waitReady
+  return new PGliteDatabase(pg)
+}
+
+/**
+ * Opens a database from a backup tarball rather than from a data directory.
+ *
+ * Restore is the half of a backup that people discover is broken at the worst
+ * possible moment, so it is exercised by a test that round-trips real rows.
+ */
+export async function openDatabaseFromDump(dump: Uint8Array): Promise<Database> {
+  // Copied into a plain ArrayBuffer: a Uint8Array may be backed by a
+  // SharedArrayBuffer, which Blob does not accept under the DOM lib the web
+  // app compiles against.
+  const buffer = dump.buffer.slice(
+    dump.byteOffset, dump.byteOffset + dump.byteLength,
+  ) as ArrayBuffer
+  const pg = await PGlite.create({ loadDataDir: new Blob([buffer]) })
   await pg.waitReady
   return new PGliteDatabase(pg)
 }
