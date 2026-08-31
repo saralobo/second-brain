@@ -119,6 +119,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       {ws.goal && <p className="meta">{ws.goal}</p>}
       <p style={{ marginTop: 14 }}>
         <a href={`/capture?workstream=${id}`}>Capture into this workstream →</a>
+        {'  ·  '}
+        <a href={`/workstreams/${id}/chat`}>Ask AVA about this workstream →</a>
       </p>
 
       <h2>Current state</h2>

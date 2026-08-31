@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <a href="/">Workstreams</a>
               <a href="/capture">Capture</a>
             </nav>
-            <span className="meta" style={{ marginLeft: 'auto' }}>V0 · Batch 1 · local only</span>
+            <span className="meta" style={{ marginLeft: 'auto' }}>V0 · Slice 3 · local only</span>
           </div>
         </header>
         <main className="wrap">{children}</main>
