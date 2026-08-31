@@ -31,6 +31,55 @@ export interface RetrievalResult {
   reason: string
 }
 
+/**
+ * A declaration carried into the packet.
+ *
+ * Kept in its OWN list rather than mixed into `retrieved`. A declaration and a
+ * piece of work evidence are different kinds of claim with different
+ * authority, and a provider that receives them in one undifferentiated block
+ * cannot tell "you told me this" from "I noticed this".
+ */
+export interface PacketCognitionEntry {
+  cognitionId: string
+  content: string
+  cognitionType: string
+  scopeDescription: string
+  /** Why this declaration applies here — the scope-match reason. */
+  matchReason: string
+  specificity: number
+  declaredAt: Date
+  origin: string
+  evidenceIds: readonly string[]
+  authority: 'DECLARED' | 'CONFIRMED'
+}
+
+/** Stabilized semantic knowledge: promoted, still pointing at its evidence. */
+export interface PacketKnowledgeEntry {
+  memoryRecordId: string
+  title: string
+  strength: EvidenceStrength
+  derivedFromEvidenceIds: readonly string[]
+  promotedAt: Date | null
+}
+
+/**
+ * A hypothesis carried into the packet — as a guess, explicitly labelled.
+ *
+ * Present so AVA can answer "what are you only guessing about me?" honestly.
+ * It never grounds a claim about what the user prefers.
+ */
+export interface PacketHypothesisEntry {
+  hypothesisId: string
+  falsifiableDescription: string
+  context: string
+  scopeDescription: string
+  status: string
+  alternativesAvailable: readonly string[]
+  evidenceIds: readonly string[]
+  counterEvidenceIds: readonly string[]
+  authority: 'HYPOTHESIS'
+}
+
 /** Why an item that was retrieved did not reach the provider. */
 export type ExclusionReason =
   | 'restricted_sensitivity'
@@ -38,6 +87,7 @@ export type ExclusionReason =
   | 'out_of_scope_workstream'
   | 'below_selection_limit'
   | 'superseded_and_not_requested'
+  | 'scope_does_not_match'
 
 export interface Exclusion {
   evidenceId: string
@@ -102,8 +152,14 @@ export interface ContextPacket {
   /** Known gaps, in the packet's own words. */
   gaps: readonly string[]
 
-  /** Slice 4. Empty in Slice 3 — and empty is the honest value. */
-  declaredCognition: readonly never[]
+  /** What the user explicitly told AVA, applicable to this context. */
+  declaredCognition: readonly PacketCognitionEntry[]
+  /** Declarations that used to apply and have since been replaced. */
+  supersededCognition: readonly PacketCognitionEntry[]
+  /** Promoted semantic knowledge, kept separate from raw evidence. */
+  stabilizedKnowledge: readonly PacketKnowledgeEntry[]
+  /** Observed patterns. Labelled as guesses, never as preferences. */
+  behavioralHypotheses: readonly PacketHypothesisEntry[]
 
   health: ContextHealthResult
   exclusions: readonly Exclusion[]

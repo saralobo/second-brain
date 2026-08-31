@@ -22,6 +22,7 @@ export type HealthDimensionId =
   | 'permission_blocked_coverage'
   | 'parsing_failures'
   | 'lineage_completeness'
+  | 'declared_cognition_coverage'
 
 export const HEALTH_DIMENSIONS: readonly HealthDimensionId[] = [
   'expected_sources_available',
@@ -34,6 +35,10 @@ export const HEALTH_DIMENSIONS: readonly HealthDimensionId[] = [
   'permission_blocked_coverage',
   'parsing_failures',
   'lineage_completeness',
+  // Slice 4: whether AVA holds anything the user actually TOLD her about the
+  // context being asked about. Immaterial to work-state questions, decisive
+  // for personal ones.
+  'declared_cognition_coverage',
 ] as const
 
 /**

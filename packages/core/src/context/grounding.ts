@@ -1,3 +1,4 @@
+import { assertsUserPreference } from '../cognition/authority'
 import type { ContextPacket } from './packet'
 
 /**
@@ -41,12 +42,18 @@ export type GroundingFailure =
   | 'assertion_without_evidence'
   | 'abstention_inconsistent'
   | 'fabricated_citation_marker'
+  /** The answer spoke for the user without the user having spoken. */
+  | 'unsupported_preference_claim'
 
 export interface GroundingVerdict {
   valid: boolean
   failures: readonly { kind: GroundingFailure; detail: string }[]
   /** Ids that survived validation and may be shown as references. */
   acceptedEvidenceIds: readonly string[]
+  /** Declarations the answer legitimately drew on. */
+  acceptedCognitionIds: readonly string[]
+  /** Hypotheses the answer referred to — always as guesses. */
+  acceptedHypothesisIds: readonly string[]
 }
 
 /**
@@ -65,8 +72,21 @@ export function validateGrounding(
   const eligible = new Set(packet.providerEligibleEvidenceIds)
   const known = new Set(packet.retrieved.map((r) => r.evidenceId))
 
+  // Cognition ids are citable too, and are tracked SEPARATELY. Collapsing them
+  // into the evidence list would erase the authority distinction at exactly
+  // the point where it matters most — the reference list the user reads.
+  const cognitionIds = new Set(packet.declaredCognition.map((c) => c.cognitionId))
+  const hypothesisIds = new Set(packet.behavioralHypotheses.map((h) => h.hypothesisId))
+  const knowledgeIds = new Set(packet.stabilizedKnowledge.map((k) => k.memoryRecordId))
+
+  const acceptedCognitionIds: string[] = []
+  const acceptedHypothesisIds: string[] = []
+
   const accepted: string[] = []
   for (const id of answer.evidenceIds) {
+    if (cognitionIds.has(id)) { acceptedCognitionIds.push(id); continue }
+    if (hypothesisIds.has(id)) { acceptedHypothesisIds.push(id); continue }
+    if (knowledgeIds.has(id)) { accepted.push(id); continue }
     if (!known.has(id)) {
       // The id does not exist in anything AVA retrieved: invented.
       failures.push({ kind: 'unknown_evidence_id', detail: `cited ${id}, which was never retrieved` })
@@ -87,12 +107,27 @@ export function validateGrounding(
     if (answer.evidenceIds.length > 0 && accepted.length === 0 && failures.length === 0) {
       failures.push({ kind: 'abstention_inconsistent', detail: 'abstained while citing evidence' })
     }
-  } else if (accepted.length === 0) {
+  } else if (accepted.length === 0 && acceptedCognitionIds.length === 0 &&
+             acceptedHypothesisIds.length === 0) {
     // A non-abstaining answer with no valid citation is exactly the failure
     // mode this whole slice exists to prevent.
     failures.push({
       kind: 'assertion_without_evidence',
       detail: 'answer asserts something but cites no evidence present in the Context Packet',
+    })
+  }
+
+  // The language contract (spec §15.2, Slice 4 brief §20).
+  //
+  // "You prefer X" is a sentence only the user is entitled to author. When the
+  // packet carries no declaration, the answer is speaking for her from AVA's
+  // own inference — which is how a guess becomes something she believes she
+  // said. Rejected outright rather than softened.
+  if (!answer.abstained && assertsUserPreference(answer.answer) &&
+      packet.declaredCognition.length === 0) {
+    failures.push({
+      kind: 'unsupported_preference_claim',
+      detail: 'states a preference as the user\'s own while no declaration applies to this context',
     })
   }
 
@@ -108,5 +143,11 @@ export function validateGrounding(
     }
   }
 
-  return { valid: failures.length === 0, failures, acceptedEvidenceIds: accepted }
+  return {
+    valid: failures.length === 0,
+    failures,
+    acceptedEvidenceIds: accepted,
+    acceptedCognitionIds,
+    acceptedHypothesisIds,
+  }
 }

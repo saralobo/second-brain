@@ -9,6 +9,7 @@
  * front of the retrieval that is supposed to constrain the model.
  */
 export type QueryKind =
+  | 'personal'
   | 'state'
   | 'change'
   | 'decision'
@@ -28,6 +29,11 @@ export interface ClassifiedQuery {
 }
 
 const PATTERNS: readonly { kind: QueryKind; re: RegExp; reason: string }[] = [
+  // Checked first: a question about the person must never be answered by the
+  // work-state path, where a preference would be treated as a fact.
+  { kind: 'personal',
+    re: /\b(my preference|my preferences|about me|told you|do i prefer|i prefer|guessing about me|know about me|my principle|my principles|my criteria|my style|my taste)\b/i,
+    reason: 'asks about the user\'s own declared or inferred cognition' },
   { kind: 'evidence', re: /\b(evidence|show me the (evidence|source)|prove|proof|how do you know|source for)\b/i,
     reason: 'asks for the evidence behind a claim' },
   { kind: 'uncertainty', re: /\b(unsure|uncertain|not sure|confiden|don'?t know|doubt)\b/i,
@@ -79,7 +85,7 @@ const INTENT_WORDS = new Set([
   'unresolved', 'open', 'pending', 'outstanding', 'undecided',
   'evidence', 'source', 'sources', 'prove', 'proof',
   'unsure', 'uncertain', 'confident', 'confidence', 'doubt',
-  'status', 'current', 'state', 'tell',
+  'status', 'current', 'state', 'tell', 'told', 'guessing', 'preference', 'preferences',
   'previous', 'earlier', 'before', 'prior', 'originally', 'superseded', 'history',
 ])
 
