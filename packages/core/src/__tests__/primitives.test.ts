@@ -96,3 +96,21 @@ describe('evidence diversity', () => {
     expect(countIndependentEvidence([item('a', 'user', null), item('b', 'user', null)])).toBe(2)
   })
 })
+
+describe('ulid monotonicity', () => {
+  it('sorts in creation order within the same millisecond', () => {
+    // The annotation table picks the latest row by (timestamp, id). A random
+    // suffix would make that tie-break arbitrary, and the losing row could be
+    // a reclassification to `restricted`.
+    const ids = Array.from({ length: 200 }, () => ulid(1_700_000_000_000))
+    const sorted = [...ids].sort()
+    expect(sorted).toEqual(ids)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('still moves forward across milliseconds', () => {
+    const a = ulid(1_700_000_000_000)
+    const b = ulid(1_700_000_000_001)
+    expect(a < b).toBe(true)
+  })
+})

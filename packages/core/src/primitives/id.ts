@@ -31,9 +31,45 @@ function encodeRandom(): string {
   return out
 }
 
-/** Generates a ULID for the given instant (defaults to now). */
+/**
+ * Increments a Crockford base32 string by one, right to left.
+ * Returns null when the whole string overflows.
+ */
+function incrementRandom(prev: string): string | null {
+  const chars = prev.split('')
+  for (let i = chars.length - 1; i >= 0; i--) {
+    const index = ENCODING.indexOf(chars[i]!)
+    if (index < ENCODING.length - 1) {
+      chars[i] = ENCODING[index + 1]!
+      return chars.join('')
+    }
+    chars[i] = ENCODING[0]!
+  }
+  return null
+}
+
+let lastSeedTime = -1
+let lastRandom = ''
+
+/**
+ * Generates a ULID for the given instant (defaults to now).
+ *
+ * Monotonic within a millisecond: two ids minted in the same millisecond sort
+ * in the order they were created. Without this the random suffix decides, and
+ * "the most recent row wins" quietly becomes "a random row wins" — which is
+ * how the latest sensitivity annotation is chosen at the provider boundary.
+ */
 export function ulid(seedTime: number = Date.now()): string {
-  return encodeTime(seedTime) + encodeRandom()
+  if (seedTime === lastSeedTime) {
+    const next = incrementRandom(lastRandom)
+    // On overflow (2^80 ids in one millisecond) fall back to fresh randomness
+    // rather than returning a duplicate.
+    lastRandom = next ?? encodeRandom()
+  } else {
+    lastSeedTime = seedTime
+    lastRandom = encodeRandom()
+  }
+  return encodeTime(seedTime) + lastRandom
 }
 
 const ULID_RE = /^[0-9A-HJKMNP-TV-Z]{26}$/
