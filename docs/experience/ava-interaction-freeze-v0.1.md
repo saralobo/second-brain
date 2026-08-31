@@ -3,7 +3,7 @@
 ```text
 Status: FROZEN
 Date: 2026-08-31
-Frozen at commit: recorded below on merge
+Frozen at commit: 0bc20be — the interaction layer tree, clean and green
 Cognitive V0: FUNCTIONALLY COMPLETE — unchanged by this layer
 Prospective Validation: NOT STARTED
 Blocking owner decisions before Warm-up Day 1: 2

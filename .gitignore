@@ -8,6 +8,17 @@ out/
 .env.*
 !.env.example
 .pgdata/
+# E2E databases. Removed on a clean exit; a crashed run leaves them behind.
+.pgdata-e2e-*/
+
+# Runtime data artifacts. These carry REAL work once validation starts:
+# `npm run db:backup` with no path writes a complete copy of the evidence
+# ledger, memory and declared cognition into the repository root, and
+# `npm run validation:export` writes the intervention record beside it.
+# ADR-22 keeps that corpus local; committing it would undo that in one step.
+ava-backup-*.tar.gz
+validation-export-*.jsonl
+
 coverage/
 test-results/
 playwright-report/
