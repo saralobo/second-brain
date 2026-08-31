@@ -115,8 +115,10 @@ describe('validation telemetry', () => {
     await withTestContext(async (ctx) => {
       await expect(
         ctx.telemetry.record({
-          // Slice 5 event: emitting it now would fabricate a timeline.
-          eventType: 'opportunity_shown',
+          // `user_seen` needs client-side observability that does not exist.
+          // Emitting it would fabricate the very timeline this table protects,
+          // and `shown` is not `seen`.
+          eventType: 'user_seen',
           occurredAt: new Date(), subjectType: 'opportunity', subjectId: 'O1',
         }),
       ).rejects.toThrow(/later slice/)

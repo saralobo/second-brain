@@ -4,7 +4,7 @@ import { capture } from '@ava/app'
 import { CAPTURE_TYPES } from '@ava/core'
 
 describe('capture pipeline', () => {
-  it('accepts all ten capture types through the quarantine pipeline', async () => {
+  it('accepts every capture type through the quarantine pipeline', async () => {
     await withTestContext(async (ctx) => {
       const ws = await ctx.workstreams.create('Alpha')
       const decision = await capture(ctx, {
@@ -22,8 +22,8 @@ describe('capture pipeline', () => {
         })
         expect(out.ok, `capture of ${type} failed`).toBe(true)
       }
-      // 1 decision + 10 types
-      expect(await ctx.evidence.count()).toBe(11)
+      // 1 decision + every capture type
+      expect(await ctx.evidence.count()).toBe(1 + CAPTURE_TYPES.length)
     })
   })
 
