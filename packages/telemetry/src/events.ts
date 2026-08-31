@@ -56,11 +56,17 @@ export type ValidationEventType =
   | 'briefing_shown'
   | 'checkpoint_opened'
   | 'checkpoint_closed'
-  // Later slices — declared, deliberately not emitted yet
+  // Slice 6
+  | 'feedback_epistemic_recorded'
+  | 'feedback_delivery_recorded'
+  | 'artifact_feedback_recorded'
+  | 'feedback_corrected'
+  | 'user_action_recorded'
+  | 'outcome_recorded'
+  | 'outcome_updated'
+  // Declared, deliberately not emitted: there is still no client-side
+  // observability, and delivering something is not the same as reading it.
   | 'user_seen'
-  | 'feedback_given'
-  | 'user_action'
-  | 'outcome_resolved'
 
 /** Events Batch 1 is allowed to emit. Anything else is a programming error. */
 export const BATCH_1_EVENTS: readonly ValidationEventType[] = [
@@ -114,8 +120,29 @@ export const SLICE_5_EVENTS: readonly ValidationEventType[] = [
   'checkpoint_opened', 'checkpoint_closed',
 ] as const
 
+/**
+ * Events Slice 6 is allowed to emit.
+ *
+ * Each corresponds to something a person actually did — a verdict given, an
+ * action reported, an outcome written down. There is no event for "the user
+ * ignored this", because silence is not an observation about the item; it is
+ * the absence of one.
+ *
+ * `user_seen` stays unemitted for the third slice running. Slice 6 revisited
+ * whether client observability now exists: it does not. Page render, response
+ * delivery and `opportunity_shown` are all proxies for `seen`, and using any
+ * of them would put a fabricated timestamp into the one timeline the
+ * prospective study depends on.
+ */
+export const SLICE_6_EVENTS: readonly ValidationEventType[] = [
+  'feedback_epistemic_recorded', 'feedback_delivery_recorded',
+  'artifact_feedback_recorded', 'feedback_corrected',
+  'user_action_recorded', 'outcome_recorded', 'outcome_updated',
+] as const
+
 const EMITTABLE: readonly ValidationEventType[] = [
   ...BATCH_1_EVENTS, ...SLICE_3_EVENTS, ...SLICE_4_EVENTS, ...SLICE_5_EVENTS,
+  ...SLICE_6_EVENTS,
 ]
 
 export interface ValidationEventInput {

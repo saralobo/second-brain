@@ -40,13 +40,13 @@ export class OpportunityRepository {
       `INSERT INTO opportunity (
          id, identity_key, version, supersedes_id, opportunity_class, workstream_id,
          status, headline, detail, minimal_action, strength, context_health,
-         content_origin, suppressed_reason, expires_at
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+         content_origin, suppressed_reason, expires_at, impacted_from
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
       [
         c.id, c.identityKey, c.version, c.supersedesOpportunityId, c.opportunityClass,
         c.workstreamId, c.status, c.headline, c.detail, c.minimalAction, c.strength,
         c.contextHealth, c.contentOrigin, input.suppressedReason,
-        c.expiresAt ? c.expiresAt.toISOString() : null,
+        c.expiresAt ? c.expiresAt.toISOString() : null, c.impactedFrom,
       ],
     )
     await this.db.query(
@@ -177,7 +177,7 @@ function toOpportunity(r: Record<string, unknown>): StoredOpportunity {
     status: r.status as OpportunityStatus,
     triggerChangeIds: (r.trigger_change_ids ?? []) as string[],
     originEvidenceIds: (r.origin_evidence_ids ?? []) as string[],
-    impactedFrom: null,
+    impactedFrom: r.impacted_from ? String(r.impacted_from) : null,
     affectedObjects: (r.affected_objects ?? []) as AffectedObject[],
     headline: String(r.headline),
     detail: String(r.detail),
