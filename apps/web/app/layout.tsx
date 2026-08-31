@@ -1,9 +1,10 @@
 import './globals.css'
 import type { ReactNode } from 'react'
+import { Nav } from './_core/nav'
 
 export const metadata = {
-  title: 'AVA V0',
-  description: 'Capture and change loop - Batch 1',
+  title: 'AVA',
+  description: 'A personal cognitive system.',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -12,13 +13,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <header className="site">
           <div className="wrap">
-            <strong>AVA</strong>
-            <nav>
-              <a href="/">Workstreams</a>
-              <a href="/capture">Capture</a>
-            <a href="/memory">What AVA knows</a>
-            </nav>
-            <span className="meta" style={{ marginLeft: 'auto' }}>V0 · Slice 6 · local only</span>
+            <span className="brand">AVA</span>
+            <Nav />
+            <span className="scope-badge">V0 · local only</span>
           </div>
         </header>
         <main className="wrap">{children}</main>
