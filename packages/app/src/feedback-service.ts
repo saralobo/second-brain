@@ -203,8 +203,11 @@ export async function recordOutcome(
   })
 
   await ctx.telemetry.record({
+    // The EVENT is "AVA wrote this down", which happens now. `recorded_at` on
+    // the row may be supplied when importing history; the event may not, or a
+    // system-clock reading would silently become an assertion.
     eventType: previous === null ? 'outcome_recorded' : 'outcome_updated',
-    occurredAt: row.recordedAt,
+    occurredAt: new Date(),
     subjectType: 'opportunity', subjectId: input.opportunityId,
     workstreamId: opportunity.workstreamId,
     payload: {

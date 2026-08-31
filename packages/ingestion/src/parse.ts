@@ -62,6 +62,9 @@ export function parse(raw: RawInput, extra: Partial<CaptureInput> = {}): ParseRe
       type: raw.declaredType ?? '',
       workstreamId: raw.workstreamId ?? '',
       content,
+      // Defaults to arrival, and `extra` may override it with a time the
+      // reporter states. The validator rejects a future value; a past one is
+      // legitimate and is the whole basis of measuring detection latency.
       observedAt: raw.receivedAt,
       ...extra,
     },

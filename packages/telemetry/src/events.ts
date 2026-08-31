@@ -157,7 +157,33 @@ export interface ValidationEventInput {
   modelRunId?: string | null
   decisionRecordId?: string | null
   payload?: Record<string, unknown>
+  /**
+   * Whose clock produced `occurredAt` (Slice 7, F-16).
+   *
+   * `system_clock` — AVA observed it herself; it cannot precede the write.
+   * `reported` — a person stated when it happened; it legitimately can.
+   *
+   * The default is `system_clock`, so an event only becomes an assertion when
+   * a caller says it is one. Analysis must be able to tell the two apart:
+   * "AVA detected this at 09:04" and "the user says this happened on Tuesday"
+   * are different kinds of fact and cannot share a column silently.
+   */
+  timeBasis?: EventTimeBasis
 }
+
+export type EventTimeBasis = 'system_clock' | 'reported'
+
+/**
+ * Events whose time is a claim about the world rather than a machine reading.
+ *
+ * Everything else is the machine observing itself and stays strictly
+ * non-backdatable.
+ */
+export const REPORTED_TIME_EVENTS: readonly ValidationEventType[] = [
+  'evidence_arrived',
+  'change_detectable_at',
+  'user_action_recorded',
+] as const
 
 export class TelemetryWriter {
   constructor(private readonly db: Database) {}
@@ -173,16 +199,19 @@ export class TelemetryWriter {
       )
     }
     const id = ulid(input.occurredAt.getTime())
+    const timeBasis = input.timeBasis
+      ?? (REPORTED_TIME_EVENTS.includes(input.eventType) ? 'reported' : 'system_clock')
     await this.db.query(
       `INSERT INTO validation_event (
          id, event_type, occurred_at, subject_type, subject_id, workstream_id,
-         context_health, evidence_strength, model_run_id, decision_record_id, payload
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+         context_health, evidence_strength, model_run_id, decision_record_id, payload,
+         time_basis
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
       [
         id, input.eventType, input.occurredAt.toISOString(), input.subjectType, input.subjectId,
         input.workstreamId ?? null, input.contextHealth ?? null, input.evidenceStrength ?? null,
         input.modelRunId ?? null, input.decisionRecordId ?? null,
-        JSON.stringify(input.payload ?? {}),
+        JSON.stringify(input.payload ?? {}), timeBasis,
       ],
     )
     return id
@@ -190,7 +219,7 @@ export class TelemetryWriter {
 
   async listBySubject(subjectId: string): Promise<ValidationEventRow[]> {
     const res = await this.db.query<ValidationEventRow>(
-      'SELECT id, event_type, occurred_at, subject_type, subject_id FROM validation_event WHERE subject_id = $1 ORDER BY occurred_at',
+      'SELECT id, event_type, occurred_at, subject_type, subject_id, time_basis FROM validation_event WHERE subject_id = $1 ORDER BY occurred_at',
       [subjectId],
     )
     return res.rows
@@ -210,4 +239,5 @@ export interface ValidationEventRow {
   occurred_at: string
   subject_type: string
   subject_id: string
+  time_basis?: EventTimeBasis
 }

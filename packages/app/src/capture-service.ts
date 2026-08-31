@@ -19,6 +19,16 @@ export interface CaptureRequest {
   type: string
   content: string
   title?: string | null
+  /**
+   * When the thing being reported actually happened, if it was not now.
+   *
+   * Slice 7 (F-15). Manual capture previously had no way to say this, so every
+   * observation was dated at the moment it was typed. That made
+   * `change_detectable_at` equal to the write time and detection latency
+   * identically zero — a measurement that looks perfect and means nothing.
+   * The validator already rejects a future value.
+   */
+  observedAt?: string | Date | null
   effectiveAt?: string | null
   supersedesStateObjectId?: string | null
   fields?: Record<string, unknown>
@@ -79,6 +89,7 @@ export async function capture(ctx: AppContext, req: CaptureRequest): Promise<Cap
   // Plane 2 — parse / normalise.
   const parsed = parse(raw, {
     title: req.title ?? null,
+    observedAt: req.observedAt ?? undefined,
     effectiveAt: req.effectiveAt ?? null,
     supersedesStateObjectId: req.supersedesStateObjectId ?? null,
     fields: req.fields ?? {},
