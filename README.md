@@ -60,18 +60,19 @@ Verification: `npm run verify` (lint, typecheck, tests) and `npm run test:e2e`.
 | **Decisions** | [docs/decisions/README.md](docs/decisions/README.md) — ADR-21, ADR-22 |
 | **Validation** | [docs/validation/README.md](docs/validation/README.md) · [Prospective Validation Strategy v0.1](docs/validation/prospective-validation-strategy-v0.1.md) |
 | **Technical specification** | [AVA Technical V0 Specification v0.1](docs/specification/ava-technical-v0-specification-v0.1.md) |
-| **Implementation** | [docs/implementation/README.md](docs/implementation/README.md) · [plan](docs/implementation/ava-v0-implementation-plan-v0.1.md) · [Batch 1 log](docs/implementation/batch-1-execution-log.md) · [Slice 3 log](docs/implementation/slice-3-execution-log.md) |
+| **Implementation** | [docs/implementation/README.md](docs/implementation/README.md) · [plan](docs/implementation/ava-v0-implementation-plan-v0.1.md) · [Batch 1 log](docs/implementation/batch-1-execution-log.md) · [Slice 3 log](docs/implementation/slice-3-execution-log.md) · [Slice 4 log](docs/implementation/slice-4-execution-log.md) |
 
 ## Repository layout
 
 ```text
-apps/web        Next.js — workstreams, capture, state, changes, chat, why
+apps/web        Next.js — workstreams, capture, state, changes, chat, why, memory
 packages/core   pure domain: primitives, state, supersession, change, impact (no I/O)
 packages/db     schema, forward-only SQL migrations, repositories
 packages/app    composition root and use cases
 packages/ingestion  three-plane quarantine pipeline
 packages/llm    provider contract, providers, prompts, budget, boundary policy
 packages/retrieval  lexical retrieval, Context Packet, Context Health signals
+packages/core   also: Declared Cognition, authority order, memory rules
 packages/telemetry  validation events, logging with redaction
 tests/          integration, golden scenarios, end-to-end
 docs/           architecture, decisions, specification, validation, implementation
@@ -87,4 +88,4 @@ docs/           architecture, decisions, specification, validation, implementati
 
 ## Next gate
 
-Review AVA V0 Slice 3 and prepare Slice 4 — Memory + Declared Cognition.
+Review AVA V0 Slice 4 and prepare Slice 5 — Opportunity + Briefing.
