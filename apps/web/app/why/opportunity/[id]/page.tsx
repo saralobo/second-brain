@@ -1,5 +1,6 @@
-import { getContext } from '@ava/app'
+import { getContext, interventionHistory } from '@ava/app'
 import { VALUE_VECTOR_FACTORS } from '@ava/core'
+import { ActionForm, FeedbackForm, OutcomeForm } from '../../../feedback-forms'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,6 +25,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const usedCognitionIds = new Set(o.valueVector.permissionScope.derivedFrom)
 
   const policies = [o.investigate, o.show, o.prepare]
+  const history = await interventionHistory(ctx, o.id)
+  const t = history?.timeline ?? null
+  const stamp = (d: Date | null): string =>
+    d === null ? 'not recorded' : d.toISOString().slice(0, 16).replace('T', ' ')
 
   return (
     <>
@@ -179,6 +184,156 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           This snapshot is written once and never rewritten. Evidence that arrived afterwards
           is deliberately absent: AVA did not have it, and a record that pretended otherwise
           would make every later measurement of anticipation meaningless.
+        </p>
+      </div>
+
+      <h2>What you said</h2>
+      <div className="card">
+        {history === null || !history.feedback.hasAny ? (
+          <p className="meta" style={{ margin: 0 }}>
+            No feedback recorded. That is a valid state — it is not a negative verdict, and AVA
+            does not read anything into it.
+          </p>
+        ) : (
+          <>
+            <div className="meta" style={{ marginTop: 0 }}>
+              <span className="tag">
+                correctness: {history.feedback.epistemic ?? 'not answered'}
+              </span>
+              <span className="tag">
+                usefulness: {history.feedback.delivery ?? 'not answered'}
+              </span>
+              {history.feedback.artifact && (
+                <span className="tag">artifact: {history.feedback.artifact.replace(/_/g, ' ')}</span>
+              )}
+              <span className="mono">{stamp(history.feedback.givenAt)}</span>
+            </div>
+            {history.feedback.reason && (
+              <p style={{ margin: '6px 0 0' }}>{history.feedback.reason}</p>
+            )}
+            <p className="meta" style={{ marginTop: 8 }}>
+              The two verdicts are independent. Correct and already known is a real combination,
+              and AVA keeps them apart rather than averaging them into a rating.
+            </p>
+            {history.feedback.history.length > 1 && (
+              <details style={{ marginTop: 8 }}>
+                <summary className="meta">
+                  {history.feedback.history.length} entries, including corrections
+                </summary>
+                <ul className="plain" style={{ marginTop: 6 }}>
+                  {history.feedback.history.map((f) => (
+                    <li key={f.id} className="meta">
+                      <span className="mono">{stamp(f.givenAt)}</span>{' '}
+                      {f.epistemic ?? '—'} / {f.delivery ?? '—'}
+                      {f.artifact ? ` / ${f.artifact.replace(/_/g, ' ')}` : ''}
+                      {f.supersededByFeedbackId && ' · later corrected'}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </>
+        )}
+        <details style={{ marginTop: 10 }}>
+          <summary className="meta">
+            {history?.feedback.hasAny ? 'Correct what you said' : 'Record what you think'}
+          </summary>
+          <FeedbackForm
+            targetId={o.id}
+            workstreamId={o.workstreamId}
+            withArtifact={artifacts.length > 0}
+            correctsFeedbackId={
+              history?.feedback.sourceIds.delivery ?? history?.feedback.sourceIds.epistemic ?? null
+            }
+          />
+        </details>
+      </div>
+
+      <h2>What you did</h2>
+      <div className="card">
+        {history === null || history.actions.length === 0 ? (
+          <p className="meta" style={{ margin: 0 }}>
+            No action recorded. AVA has no way to observe what you do outside it, so nothing is
+            assumed either way.
+          </p>
+        ) : (
+          <ul className="plain">
+            {history.actions.map((a) => (
+              <li key={a.id} className="meta">
+                <span className="mono">{stamp(a.actedAt)}</span>{' '}
+                <span className="tag">{a.kind.replace(/_/g, ' ')}</span>
+                {a.description && ` — ${a.description}`}
+              </li>
+            ))}
+          </ul>
+        )}
+        <ActionForm opportunityId={o.id} workstreamId={o.workstreamId} />
+      </div>
+
+      <h2>How it ended</h2>
+      <div className="card">
+        {history === null || history.outcome === null ? (
+          <p className="meta" style={{ margin: 0 }}>
+            No outcome recorded. Silence is not resolution, and AVA will not write one in for you.
+          </p>
+        ) : (
+          <>
+            <div className="meta">
+              <span className="tag">{history.outcome.state}</span>
+              <span className="tag">{history.outcome.resolvedBy.replace(/_/g, ' ')}</span>
+              <span className="mono">{stamp(history.outcome.recordedAt)}</span>
+            </div>
+            {history.outcome.note && <p style={{ margin: '6px 0 0' }}>{history.outcome.note}</p>}
+            {history.outcomeHistory.length > 1 && (
+              <details style={{ marginTop: 8 }}>
+                <summary className="meta">{history.outcomeHistory.length} outcome entries</summary>
+                <ul className="plain" style={{ marginTop: 6 }}>
+                  {history.outcomeHistory.map((oc) => (
+                    <li key={oc.id} className="meta">
+                      <span className="mono">{stamp(oc.recordedAt)}</span>{' '}
+                      <span className="tag">{oc.state}</span>
+                      {oc.supersededByOutcomeId && ' · later revised'}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </>
+        )}
+        <OutcomeForm opportunityId={o.id} workstreamId={o.workstreamId} />
+      </div>
+
+      <h2>Timeline</h2>
+      <div className="card">
+        <table>
+          <tbody>
+            {t !== null && ([
+              ['evidence arrived', t.evidenceArrivedAt],
+              ['change became detectable', t.changeDetectableAt],
+              ['change detected', t.changeDetectedAt],
+              ['opportunity generated', t.opportunityGeneratedAt],
+              ['opportunity shown', t.opportunityShownAt],
+              ['feedback given', t.feedbackAt],
+              ['action taken', t.userActionAt],
+              ['outcome recorded', t.outcomeAt],
+            ] as const).map(([name, value]) => (
+              <tr key={name}>
+                <td className="meta">{name}</td>
+                <td className="mono">{stamp(value)}</td>
+              </tr>
+            ))}
+            <tr>
+              <td className="meta">you saw it</td>
+              <td className="meta">
+                not recorded — AVA has no way to know when you read something, and delivering is
+                not reading
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p className="meta" style={{ marginTop: 8 }}>
+          Missing timestamps are left missing. Filling one in afterwards would destroy the only
+          thing this timeline is for.
         </p>
       </div>
 

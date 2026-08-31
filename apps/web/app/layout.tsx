@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <a href="/capture">Capture</a>
             <a href="/memory">What AVA knows</a>
             </nav>
-            <span className="meta" style={{ marginLeft: 'auto' }}>V0 · Slice 5 · local only</span>
+            <span className="meta" style={{ marginLeft: 'auto' }}>V0 · Slice 6 · local only</span>
           </div>
         </header>
         <main className="wrap">{children}</main>

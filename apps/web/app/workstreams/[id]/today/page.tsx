@@ -1,4 +1,6 @@
 import { buildBriefing, getContext } from '@ava/app'
+import { projectFeedback } from '@ava/core'
+import { FeedbackForm } from '../../../feedback-forms'
 import { CheckpointForm, PrepareForm } from './today-forms'
 
 export const dynamic = 'force-dynamic'
@@ -22,6 +24,16 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const prepared = new Set(
     (await ctx.prepared.listAvailable(id)).map((a) => a.opportunityId),
   )
+
+  // Feedback is shown as a discreet indicator. Nothing is hidden because it
+  // was marked already known or irrelevant: that would be personalisation by
+  // the back door, and this slice deliberately learns nothing.
+  const feedbackRows = await ctx.feedback.listByWorkstream(id)
+  const feedbackByOpportunity = new Map<string, typeof feedbackRows>()
+  for (const row of feedbackRows) {
+    const key = row.opportunityId ?? row.targetId
+    feedbackByOpportunity.set(key, [...(feedbackByOpportunity.get(key) ?? []), row])
+  }
 
   return (
     <>
@@ -61,6 +73,34 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 {item.whyHref && <> · <a href={item.whyHref}>Why</a></>}
               </div>
               {item.note && <p className="meta" style={{ marginTop: 6 }}>{item.note}</p>}
+              {item.opportunityId && (() => {
+                const current = projectFeedback(feedbackByOpportunity.get(item.opportunityId) ?? [])
+                return (
+                  <>
+                    <div className="meta" style={{ marginTop: 6 }}>
+                      {current.hasAny ? (
+                        <>
+                          <span className="tag">{current.epistemic ?? 'correctness not answered'}</span>
+                          <span className="tag">{current.delivery ?? 'usefulness not answered'}</span>
+                        </>
+                      ) : (
+                        <span className="tag">no feedback yet</span>
+                      )}
+                    </div>
+                    <details style={{ marginTop: 6 }}>
+                      <summary className="meta">
+                        {current.hasAny ? 'Change what you said' : 'Tell AVA what you think'}
+                      </summary>
+                      <FeedbackForm
+                        targetId={item.opportunityId}
+                        workstreamId={id}
+                        withArtifact={prepared.has(item.opportunityId)}
+                        correctsFeedbackId={current.sourceIds.delivery ?? current.sourceIds.epistemic}
+                      />
+                    </details>
+                  </>
+                )
+              })()}
               {item.opportunityId && block.id !== 'prepared_for_you'
                 && !prepared.has(item.opportunityId) && (
                 <PrepareForm opportunityId={item.opportunityId} workstreamId={id} />
