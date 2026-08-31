@@ -16,7 +16,7 @@ AVA V0:
 FUNCTIONALLY COMPLETE
 
 Validation:
-NOT STARTED
+NOT STARTED — START DEFERRED UNTIL INTERACTION LAYER FREEZE
 
 Readiness audit:
 READY WITH LIMITATIONS
@@ -125,6 +125,27 @@ Ver [Prospective Validation Strategy v0.1](prospective-validation-strategy-v0.1.
 **Nenhuma hipótese está validada.** A arquitetura permanece congelada e não verificada empiricamente.
 
 O protocolo histórico e o decision lock permanecem inalterados e podem fornecer métricas, schemas e thresholds — mas nenhum threshold migra para o contexto prospectivo sem que a equivalência semântica seja documentada em um Prospective Validation Protocol explicitamente versionado.
+
+## Interaction Layer — início da validação adiado
+
+Uma decisão de produto tomada antes do warm-up introduz uma camada de interação
+global e conversacional. O
+[Interaction Experience Package v0.1](../experience/ava-interaction-experience-package-v0.1.md)
+avalia o impacto na medição e conclui que a interface precisa ser **congelada
+antes do Warm-up Day 1** — trocar o instrumento no meio do estudo invalidaria a
+comparação longitudinal.
+
+`VALIDATION START DEFERRED UNTIL INTERACTION LAYER FREEZE`
+
+**Nenhum threshold travado foi alterado.** As mudanças identificadas são
+esclarecimentos de protocolo e mudanças de instrumentação, com uma exceção que
+exige decisão da dona: a conversa global reconstrói o briefing sob demanda e,
+com isso, muda o que as semanas de retirada de D-19 medem — de *proatividade
+versus nada* para *push versus pull*. Registrado em §17 do Experience Package.
+
+Também registrado: **D-21 é uma coorte de avaliação, não uma restrição de escopo
+do produto.** A AVA permanece multi-workstream durante a validação; D-21 apenas
+identifica o workstream cujos denominadores de métrica primária estão travados.
 
 ## Próximo gate
 
