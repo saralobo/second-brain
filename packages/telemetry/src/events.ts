@@ -44,9 +44,19 @@ export type ValidationEventType =
   | 'hypothesis_conflict_recorded'
   | 'knowledge_promoted'
   | 'memory_view_rebuilt'
-  // Later slices — declared, deliberately not emitted in Batch 1
+  // Slice 5
   | 'opportunity_generated'
+  | 'opportunity_eligible'
+  | 'opportunity_suppressed'
   | 'opportunity_shown'
+  | 'preparation_started'
+  | 'preparation_completed'
+  | 'preparation_denied'
+  | 'briefing_generated'
+  | 'briefing_shown'
+  | 'checkpoint_opened'
+  | 'checkpoint_closed'
+  // Later slices — declared, deliberately not emitted yet
   | 'user_seen'
   | 'feedback_given'
   | 'user_action'
@@ -88,8 +98,24 @@ export const SLICE_4_EVENTS: readonly ValidationEventType[] = [
   'knowledge_promoted', 'memory_view_rebuilt',
 ] as const
 
+/**
+ * Events Slice 5 is allowed to emit.
+ *
+ * `opportunity_shown` and `briefing_shown` mean the server DELIVERED the item.
+ * They do not claim it was read. `user_seen` stays unemitted for exactly the
+ * reason it stayed unemitted in Slice 3: there is still no client-side
+ * observability, and `shown` is not `seen`. Approximating one with the other
+ * would corrupt the very latency measurements this table exists to support.
+ */
+export const SLICE_5_EVENTS: readonly ValidationEventType[] = [
+  'opportunity_generated', 'opportunity_eligible', 'opportunity_suppressed',
+  'opportunity_shown', 'preparation_started', 'preparation_completed',
+  'preparation_denied', 'briefing_generated', 'briefing_shown',
+  'checkpoint_opened', 'checkpoint_closed',
+] as const
+
 const EMITTABLE: readonly ValidationEventType[] = [
-  ...BATCH_1_EVENTS, ...SLICE_3_EVENTS, ...SLICE_4_EVENTS,
+  ...BATCH_1_EVENTS, ...SLICE_3_EVENTS, ...SLICE_4_EVENTS, ...SLICE_5_EVENTS,
 ]
 
 export interface ValidationEventInput {
