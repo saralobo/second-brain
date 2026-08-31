@@ -132,6 +132,79 @@ export class EvidenceRepository {
     return res.rows.map(toEvidence)
   }
 
+  /**
+   * Records a reclassification. Evidence itself is never touched: the
+   * annotation table is append-only and the latest row wins on read.
+   */
+  async annotate(input: {
+    evidenceId: string
+    sensitivity?: Sensitivity | null
+    workstreamId?: string | null
+    reason: string
+  }): Promise<void> {
+    await this.db.query(
+      `INSERT INTO evidence_annotation (id, evidence_id, workstream_id, sensitivity, reason)
+       VALUES ($1,$2,$3,$4,$5)`,
+      [ulid(), input.evidenceId, input.workstreamId ?? null, input.sensitivity ?? null, input.reason],
+    )
+  }
+
+  /**
+   * The sensitivity that governs a piece of evidence RIGHT NOW.
+   *
+   * The value stored on the evidence row is the baseline set at capture. A
+   * later annotation may reclassify it. Any authorisation decision — above all
+   * whether content may cross the provider boundary — must read this, never
+   * the base row: an item reclassified to `restricted` would otherwise still
+   * present as `normal` at the boundary and be sent.
+   */
+  async effectiveSensitivity(evidenceId: string): Promise<Sensitivity | null> {
+    const res = await this.db.query<{ sensitivity: Sensitivity }>(
+      `SELECT COALESCE(
+                (SELECT a.sensitivity
+                   FROM evidence_annotation a
+                  WHERE a.evidence_id = e.id AND a.sensitivity IS NOT NULL
+                  ORDER BY a.annotated_at DESC, a.id DESC
+                  LIMIT 1),
+                e.sensitivity
+              ) AS sensitivity
+         FROM evidence e
+        WHERE e.id = $1`,
+      [evidenceId],
+    )
+    return res.rows[0]?.sensitivity ?? null
+  }
+
+  /** Effective sensitivity for many items, in one query. */
+  async effectiveSensitivities(ids: readonly string[]): Promise<Map<string, Sensitivity>> {
+    if (ids.length === 0) return new Map()
+    const res = await this.db.query<{ id: string; sensitivity: Sensitivity }>(
+      `SELECT e.id,
+              COALESCE(
+                (SELECT a.sensitivity
+                   FROM evidence_annotation a
+                  WHERE a.evidence_id = e.id AND a.sensitivity IS NOT NULL
+                  ORDER BY a.annotated_at DESC, a.id DESC
+                  LIMIT 1),
+                e.sensitivity
+              ) AS sensitivity
+         FROM evidence e
+        WHERE e.id = ANY($1::text[])`,
+      [ids as string[]],
+    )
+    return new Map(res.rows.map((r) => [r.id, r.sensitivity]))
+  }
+
+  /**
+   * Evidence with its effective sensitivity resolved.
+   * This is the only shape the provider boundary is allowed to consume.
+   */
+  async findForBoundary(ids: readonly string[]): Promise<Evidence[]> {
+    const items = await this.findByIds(ids)
+    const effective = await this.effectiveSensitivities(ids)
+    return items.map((e) => ({ ...e, sensitivity: effective.get(e.id) ?? e.sensitivity }))
+  }
+
   async count(): Promise<number> {
     const res = await this.db.query<{ n: string }>('SELECT count(*)::text AS n FROM evidence')
     return Number(res.rows[0]?.n ?? 0)

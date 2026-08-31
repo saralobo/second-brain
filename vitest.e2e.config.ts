@@ -11,6 +11,7 @@ export default defineConfig({
       '@ava/db': r('./packages/db/src/index.ts'),
       '@ava/ingestion': r('./packages/ingestion/src/index.ts'),
       '@ava/telemetry': r('./packages/telemetry/src/index.ts'),
+      '@ava/llm/anthropic': r('./packages/llm/src/providers/anthropic.ts'),
       '@ava/llm': r('./packages/llm/src/index.ts'),
       '@ava/app': r('./packages/app/src/index.ts'),
       '@ava/test-support': r('./packages/test-support/src/index.ts'),

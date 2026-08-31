@@ -45,6 +45,13 @@ export type GenerateResult<T> =
 
 export interface ModelProvider {
   readonly id: string
+  /**
+   * The model name as the price table knows it. Exposed explicitly rather
+   * than parsed out of `id`: an id is an opaque label, and deriving cost from
+   * a string split silently produced an unpriced model — which the budget
+   * gate then treated as unbounded.
+   */
+  readonly modelName: string
   readonly policyMetadata: ProviderPolicy
   readonly timeoutMs: number
   readonly maxRetries: number

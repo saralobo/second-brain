@@ -12,6 +12,7 @@ import type {
  */
 export class MockModelProvider implements ModelProvider {
   readonly id = 'mock/deterministic/1'
+  readonly modelName: string
   readonly timeoutMs = 5_000
   readonly maxRetries = 0
 
@@ -24,7 +25,17 @@ export class MockModelProvider implements ModelProvider {
 
   private readonly total: Usage = { inputTokens: 0, outputTokens: 0, costUsd: 0 }
 
-  constructor(private readonly responses: Map<string, unknown> = new Map()) {}
+  /**
+   * `modelName` may be overridden so tests can exercise cost-dependent paths
+   * against the real price table. It changes nothing about execution: the mock
+   * still performs no network access.
+   */
+  constructor(
+    private readonly responses: Map<string, unknown> = new Map(),
+    modelName = 'mock/deterministic/1',
+  ) {
+    this.modelName = modelName
+  }
 
   /** Registers a canned response for an archetype, for tests. */
   setResponse(archetype: string, value: unknown): void {

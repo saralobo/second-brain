@@ -1,6 +1,6 @@
 import {
-  ChangeRepository, EvidenceRepository, SourceRepository, StateRepository,
-  WorkstreamRepository, migrate, openDatabase, openTestDatabase,
+  ChangeRepository, EvidenceRepository, ModelRunRepository, SourceRepository,
+  StateRepository, WorkstreamRepository, migrate, openDatabase, openTestDatabase,
 } from '@ava/db'
 import type { Database } from '@ava/db'
 import { TelemetryWriter } from '@ava/telemetry'
@@ -19,6 +19,7 @@ export interface AppContext {
   sources: SourceRepository
   state: StateRepository
   changes: ChangeRepository
+  modelRuns: ModelRunRepository
   telemetry: TelemetryWriter
 }
 
@@ -30,6 +31,7 @@ export function buildContext(db: Database): AppContext {
     sources: new SourceRepository(db),
     state: new StateRepository(db),
     changes: new ChangeRepository(db),
+    modelRuns: new ModelRunRepository(db),
     telemetry: new TelemetryWriter(db),
   }
 }

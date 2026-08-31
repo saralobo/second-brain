@@ -41,9 +41,15 @@ export interface UsageWindow {
 export const EMPTY_WINDOW: UsageWindow = { checkpointUsd: 0, dailyUsd: 0, monthlyUsd: 0, retries: 0 }
 
 export class BudgetController {
-  private readonly window: UsageWindow = { ...EMPTY_WINDOW }
+  private readonly window: UsageWindow
 
-  constructor(private readonly caps: SafetyCaps = UNCONFIGURED_CAPS) {}
+  constructor(
+    private readonly caps: SafetyCaps = UNCONFIGURED_CAPS,
+    /** Spend already recorded in the current windows, loaded from ModelRun. */
+    seedWindow: Partial<UsageWindow> = {},
+  ) {
+    this.window = { ...EMPTY_WINDOW, ...seedWindow }
+  }
 
   /**
    * Authorises an external model call.
