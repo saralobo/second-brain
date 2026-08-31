@@ -1,10 +1,17 @@
-import { classifyQuery, projectCurrentState, ulid } from '@ava/core'
+import {
+  applicableDeclarations, applicableHypotheses, authorityOf, classifyQuery,
+  describeScope, projectCurrentState, ulid,
+} from '@ava/core'
 import { classify, isDenied } from '@ava/llm'
 import type {
-  ClassifiedQuery, ContextPacket, Exclusion, PacketChangeEntry, PacketStateEntry,
+  ClassifiedQuery, CognitionContext, ContextPacket, Exclusion, PacketChangeEntry,
+  PacketCognitionEntry, PacketHypothesisEntry, PacketKnowledgeEntry, PacketStateEntry,
   RetrievalResult, StateObjectVersion,
 } from '@ava/core'
-import type { ChangeRepository, RetrievalRepository, StateRepository } from '@ava/db'
+import type {
+  BehavioralHypothesisRepository, ChangeRepository, DeclaredCognitionRepository,
+  EvidenceRepository, MemoryRepository, RetrievalRepository, StateRepository,
+} from '@ava/db'
 import { LexicalRetrieval } from './lexical'
 import { assessHealth } from './health'
 
@@ -12,6 +19,10 @@ export interface PacketDeps {
   retrieval: RetrievalRepository
   state: StateRepository
   changes: ChangeRepository
+  cognition: DeclaredCognitionRepository
+  hypotheses: BehavioralHypothesisRepository
+  memory: MemoryRepository
+  evidence: EvidenceRepository
 }
 
 export interface PacketRequest {
@@ -22,6 +33,14 @@ export interface PacketRequest {
   maxProviderItems?: number
   /** Marks a synthetic development corpus as CLASS 0. */
   synthetic?: boolean
+  /**
+   * The situation being asked about, used for scope matching.
+   *
+   * A declaration applies only when its scope matches. Leaving this empty
+   * means only unscoped declarations apply — the conservative reading, and the
+   * one that keeps a contextual preference from becoming a global one.
+   */
+  cognitionContext?: CognitionContext
 }
 
 export interface PacketBuildResult {
@@ -47,6 +66,7 @@ export async function buildContextPacket(
 ): Promise<PacketBuildResult> {
   const asOf = req.asOf ?? new Date()
   const query: ClassifiedQuery = classifyQuery(req.question)
+  const scopeExclusions: Exclusion[] = []
   const maxItems = req.maxProviderItems ?? DEFAULT_MAX_PROVIDER_ITEMS
 
   const versions = await deps.state.allVersions(req.workstreamId)
@@ -54,7 +74,7 @@ export async function buildContextPacket(
 
   const strategy = new LexicalRetrieval(deps.retrieval)
   const started = Date.now()
-  const retrieved = await strategy.search({
+  const retrieved: RetrievalResult[] = await strategy.search({
     workstreamId: req.workstreamId,
     terms: query.terms,
     asOf,
@@ -64,6 +84,115 @@ export async function buildContextPacket(
 
   const view = projectCurrentState({ workstreamId: req.workstreamId, versions, at: asOf })
   const changeRecords = await deps.changes.listByWorkstream(req.workstreamId, 25)
+
+  // Personal cognition. Loaded through the authority rules rather than as a
+  // plain list, so a declaration whose scope does not cover this situation is
+  // never carried in as if it did.
+  const cognitionContext: CognitionContext = {
+    workstreamId: req.workstreamId,
+    ...req.cognitionContext,
+    at: asOf,
+  }
+  const [allCognition, allHypotheses, stabilized] = await Promise.all([
+    deps.cognition.listAll(),
+    deps.hypotheses.list(req.workstreamId),
+    deps.memory.listByClass('semantic_stabilized', req.workstreamId),
+  ])
+  const inScopeCognition = allCognition.filter(
+    (c) => c.workstreamId === null || c.workstreamId === req.workstreamId)
+
+  const applicable = applicableDeclarations(inScopeCognition, cognitionContext)
+  const declaredCognition: PacketCognitionEntry[] = applicable.map((a) => ({
+    cognitionId: a.declaration.id,
+    content: a.declaration.content,
+    cognitionType: a.declaration.cognitionType,
+    scopeDescription: describeScope(a.declaration.scope),
+    matchReason: a.reason,
+    specificity: a.specificity,
+    declaredAt: a.declaration.declaredAt,
+    origin: a.declaration.origin,
+    evidenceIds: a.declaration.evidenceIds,
+    authority: authorityOf(a.declaration) === 'CONFIRMED' ? 'CONFIRMED' : 'DECLARED',
+  }))
+
+  const applicableIds = new Set(declaredCognition.map((d) => d.cognitionId))
+  const supersededCognition: PacketCognitionEntry[] = inScopeCognition
+    .filter((c) => c.status !== 'active')
+    .map((c) => ({
+      cognitionId: c.id,
+      content: c.content,
+      cognitionType: c.cognitionType,
+      scopeDescription: describeScope(c.scope),
+      matchReason: `${c.status}; kept as history`,
+      specificity: 0,
+      declaredAt: c.declaredAt,
+      origin: c.origin,
+      evidenceIds: c.evidenceIds,
+      authority: 'DECLARED' as const,
+    }))
+
+  // Active declarations whose scope does NOT cover this situation are an
+  // exclusion, not an omission: the user should be able to see that AVA held
+  // something back because she scoped it elsewhere.
+  for (const c of inScopeCognition) {
+    if (c.status !== 'active' || applicableIds.has(c.id)) continue
+    scopeExclusions.push({
+      evidenceId: c.id,
+      reason: 'scope_does_not_match',
+      detail: `declared for ${describeScope(c.scope)}, which does not cover this question`,
+    })
+  }
+
+  const behavioralHypotheses: PacketHypothesisEntry[] =
+    applicableHypotheses(allHypotheses, cognitionContext).map((h) => ({
+      hypothesisId: h.id,
+      falsifiableDescription: h.falsifiableDescription,
+      context: h.context,
+      scopeDescription: describeScope(h.scope),
+      status: h.status,
+      alternativesAvailable: h.alternativesAvailable,
+      evidenceIds: h.evidenceIds,
+      counterEvidenceIds: h.counterEvidenceIds,
+      authority: 'HYPOTHESIS' as const,
+    }))
+
+  // The words behind an applicable declaration are retrieved by SCOPE, not by
+  // wording. Lexical search would miss them whenever the user phrased her
+  // preference differently from the question — and then a personal question
+  // would arrive at the boundary with nothing to answer from, even though the
+  // declaration that answers it is sitting right there.
+  const declarationEvidenceIds = declaredCognition.flatMap((c) => [...c.evidenceIds])
+  const alreadyRetrieved = new Set(retrieved.map((r) => r.evidenceId))
+  const missing = declarationEvidenceIds.filter((id) => !alreadyRetrieved.has(id))
+  if (missing.length > 0) {
+    const rows = await deps.evidence.findForBoundary(missing)
+    for (const e of rows) {
+      retrieved.push({
+        evidenceId: e.id,
+        sourceRecordId: e.sourceRecordId,
+        workstreamId: e.workstreamId,
+        title: e.title,
+        excerpt: e.content,
+        captureType: e.captureType,
+        observedAt: e.observedAt,
+        effectiveAt: e.effectiveAt,
+        contentOrigin: e.contentOrigin,
+        strength: e.strength,
+        sensitivity: e.sensitivity,
+        supersededByObjectVersion: supersededEvidence.get(e.id) ?? null,
+        score: 0,
+        reason: 'carries the wording of a declaration that applies to this context',
+      })
+    }
+  }
+
+  const stabilizedKnowledge: PacketKnowledgeEntry[] = stabilized.map((m) => ({
+    memoryRecordId: m.id,
+    title: m.title,
+    strength: m.strength,
+    derivedFromEvidenceIds: m.derivedFromEvidenceIds,
+    promotedAt: m.promotedAt,
+  }))
 
   const toEntry = (objectId: string, type: string, v: StateObjectVersion): PacketStateEntry => ({
     objectId,
@@ -108,6 +237,7 @@ export async function buildContextPacket(
   // an item excluded here is still visible in the UI and still counted in
   // health — it simply does not cross the boundary.
   const { eligible, exclusions } = selectForProvider(retrieved, maxItems, req.synthetic === true)
+  exclusions.push(...scopeExclusions)
 
   const signals = await deps.retrieval.healthSignals(req.workstreamId)
   const withheldByPolicy = exclusions.filter(
@@ -126,6 +256,8 @@ export async function buildContextPacket(
     // happened to match the wording best. Withholding that still leaves usable
     // evidence is a DEGRADED answer with the gap named — not silence.
     withheldMaterial: withheldByPolicy.length > 0 && eligible.length === 0,
+    declaredCognitionCount: declaredCognition.length,
+    hypothesisCount: behavioralHypotheses.length,
     now: asOf,
   })
 
@@ -146,7 +278,10 @@ export async function buildContextPacket(
     changes,
     conflicts,
     gaps,
-    declaredCognition: [],
+    declaredCognition,
+    supersededCognition,
+    stabilizedKnowledge,
+    behavioralHypotheses,
     health,
     exclusions,
     providerEligibleEvidenceIds: eligible.map((r) => r.evidenceId),

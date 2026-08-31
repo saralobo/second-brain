@@ -28,7 +28,8 @@
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "provider:smoke": "tsx packages/app/src/cli/provider-smoke.ts",
     "ask": "tsx packages/app/src/cli/ask.ts",
-    "eval:answers": "tsx packages/app/src/cli/answer-eval.ts"
+    "eval:answers": "tsx packages/app/src/cli/answer-eval.ts",
+    "cognition": "tsx packages/app/src/cli/cognition.ts"
   },
   "devDependencies": {
     "typescript": "^5.7.2",

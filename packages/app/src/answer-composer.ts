@@ -15,6 +15,11 @@ export function composeMockAnswer(packet: ContextPacket): GroundedAnswer {
   const eligible = new Set(packet.providerEligibleEvidenceIds)
   const items = packet.retrieved.filter((r) => eligible.has(r.evidenceId))
 
+  // Personal questions are answered from cognition, not from work evidence.
+  // They are handled first and separately: answering "what do I prefer" out of
+  // the evidence ledger would report behaviour as if it were a statement.
+  if (packet.query.kind === 'personal') return composePersonalAnswer(packet)
+
   if (items.length === 0) {
     return {
       answer: 'I do not have enough evidence to answer this reliably.',
@@ -96,6 +101,67 @@ export function composeMockAnswer(packet: ContextPacket): GroundedAnswer {
     // Cites everything the composition actually drew on, and nothing else.
     evidenceIds: items.map((r) => r.evidenceId),
     uncertainties,
+    abstained: false,
+  }
+}
+
+/**
+ * The language contract in code (Slice 4 brief §20).
+ *
+ * A declaration may be reported as something the user said. A hypothesis may
+ * only be reported as a guess, and the sentence has to say so — otherwise the
+ * user reads AVA's inference in her own voice and has no way to tell which of
+ * her stated preferences she never stated.
+ */
+function composePersonalAnswer(packet: ContextPacket): GroundedAnswer {
+  const lines: string[] = []
+  const cited: string[] = []
+
+  if (packet.declaredCognition.length > 0) {
+    lines.push('What you explicitly told me:')
+    for (const c of packet.declaredCognition) {
+      lines.push(`- ${c.content} (${c.cognitionType}; applies to ${c.scopeDescription})`)
+      cited.push(c.cognitionId)
+    }
+  }
+
+  if (packet.stabilizedKnowledge.length > 0) {
+    lines.push('', 'Supported by evidence, not by anything you stated:')
+    for (const k of packet.stabilizedKnowledge) {
+      lines.push(`- ${k.title} (${k.strength})`)
+      cited.push(k.memoryRecordId)
+    }
+  }
+
+  if (packet.behavioralHypotheses.length > 0) {
+    lines.push('', 'Things I am only guessing about — you have not told me these:')
+    for (const h of packet.behavioralHypotheses) {
+      lines.push(`- I have a hypothesis that ${h.falsifiableDescription}`)
+      lines.push(`  observed in ${h.context}; alternatives available: ${h.alternativesAvailable.join(', ') || 'none recorded'}`)
+      cited.push(h.hypothesisId)
+    }
+  }
+
+  if (packet.supersededCognition.length > 0) {
+    lines.push('', 'You have since replaced:')
+    for (const c of packet.supersededCognition) {
+      lines.push(`- ${c.content} (${c.matchReason})`)
+    }
+  }
+
+  if (cited.length === 0) {
+    return {
+      answer: 'You have not told me anything that applies here, and I am not going to guess.',
+      evidenceIds: [],
+      uncertainties: [...packet.gaps],
+      abstained: true,
+    }
+  }
+
+  return {
+    answer: lines.join('\n'),
+    evidenceIds: cited,
+    uncertainties: [...packet.conflicts, ...packet.gaps],
     abstained: false,
   }
 }

@@ -21,6 +21,10 @@ import type { HealthSignals } from '@ava/db'
  * one of them.
  */
 const MATERIAL: Record<QueryKind, readonly HealthDimensionId[]> = {
+  // A personal question turns on what the user actually declared. Retrieval
+  // over work evidence is NOT a substitute: behaviour is not a statement of
+  // preference, and answering from it would put words in her mouth.
+  personal: ['declared_cognition_coverage', 'permission_blocked_coverage', 'unresolved_contradictions'],
   state: ['expected_sources_available', 'permission_blocked_coverage', 'unresolved_contradictions', 'ingestion_success'],
   change: ['expected_sources_available', 'permission_blocked_coverage', 'temporal_coverage', 'unresolved_contradictions'],
   decision: ['expected_sources_available', 'permission_blocked_coverage', 'unresolved_contradictions'],
@@ -38,6 +42,10 @@ export interface HealthInput {
   withheldCount: number
   /** Items withheld that the question specifically needed. */
   withheldMaterial: boolean
+  /** Declarations that actually apply to the situation being asked about. */
+  declaredCognitionCount: number
+  /** Observed patterns covering the same situation. */
+  hypothesisCount: number
   /** Freshest evidence AVA holds for this workstream, if any. */
   now: Date
 }
@@ -149,6 +157,23 @@ export function assessHealth(input: HealthInput): ContextHealthResult {
     signals.systemEvidenceWithoutLineage > 0
       ? `${signals.systemEvidenceWithoutLineage} system-origin item(s) have no lineage root`
       : 'lineage complete for system-origin evidence')
+
+  // 11. Declared cognition coverage (Slice 4).
+  //
+  // Material only for personal questions. A history of behaviour is NOT
+  // coverage: answering "what do I prefer" from observed patterns would put
+  // words in the user's mouth, so a hypothesis without a declaration is
+  // DEGRADED — enough to say "I have a guess", never enough to assert.
+  if (input.declaredCognitionCount > 0) {
+    add('declared_cognition_coverage', 'ok',
+      `${input.declaredCognitionCount} declaration(s) apply to this context`)
+  } else if (input.hypothesisCount > 0) {
+    add('declared_cognition_coverage', 'degraded',
+      `nothing declared for this context; ${input.hypothesisCount} observed pattern(s) exist, which are guesses`)
+  } else {
+    add('declared_cognition_coverage', 'insufficient',
+      'the user has told AVA nothing that applies to this context')
+  }
 
   // Every declared dimension must be present, so that a missing computation
   // is a loud failure rather than a silently healthy report.

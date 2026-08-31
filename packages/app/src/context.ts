@@ -1,7 +1,8 @@
 import {
-  ChangeRepository, ContextHealthRepository, ConversationRepository,
-  DecisionRecordRepository, EvidenceRepository, ModelRunRepository, RetrievalRepository,
-  SourceRepository, StateRepository, WorkstreamRepository,
+  BehavioralHypothesisRepository, BehavioralObservationRepository, ChangeRepository,
+  ContextHealthRepository, ConversationRepository, DeclaredCognitionRepository,
+  DecisionRecordRepository, EvidenceRepository, MemoryRepository, ModelRunRepository,
+  RetrievalRepository, SourceRepository, StateRepository, WorkstreamRepository,
   migrate, openDatabase, openTestDatabase,
 } from '@ava/db'
 import type { Database } from '@ava/db'
@@ -26,6 +27,10 @@ export interface AppContext {
   decisionRecords: DecisionRecordRepository
   contextHealth: ContextHealthRepository
   conversations: ConversationRepository
+  cognition: DeclaredCognitionRepository
+  hypotheses: BehavioralHypothesisRepository
+  observations: BehavioralObservationRepository
+  memory: MemoryRepository
   telemetry: TelemetryWriter
 }
 
@@ -42,6 +47,10 @@ export function buildContext(db: Database): AppContext {
     decisionRecords: new DecisionRecordRepository(db),
     contextHealth: new ContextHealthRepository(db),
     conversations: new ConversationRepository(db),
+    cognition: new DeclaredCognitionRepository(db),
+    hypotheses: new BehavioralHypothesisRepository(db),
+    observations: new BehavioralObservationRepository(db),
+    memory: new MemoryRepository(db),
     telemetry: new TelemetryWriter(db),
   }
 }

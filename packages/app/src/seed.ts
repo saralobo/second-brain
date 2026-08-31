@@ -1,6 +1,8 @@
 import { newRelationship } from '@ava/core'
 import type { AppContext } from './context'
 import { capture } from './capture-service'
+import { declareCognition } from './cognition-service'
+import { proposeHypothesis } from './hypothesis-service'
 
 /**
  * Controlled synthetic seed (implementation plan §23).
@@ -66,6 +68,53 @@ export async function seedProjectAlpha(ctx: AppContext): Promise<SeedResult> {
   )
 
   return { workstreamId: ws.id, decisionObjectId, artifactObjectId, evidenceIds }
+}
+
+/**
+ * Personal cognition for the development scenario.
+ *
+ * A declaration the user made, plus a pattern AVA noticed. They exist side by
+ * side so the difference in authority is visible in the Memory surface rather
+ * than only in the schema.
+ *
+ * Entirely fictional. Never evidence of validation.
+ */
+export async function seedDeclaredCognition(
+  ctx: AppContext, workstreamId: string,
+): Promise<{ cognitionId: string; hypothesisId: string | null }> {
+  const declared = await declareCognition(ctx, {
+    content: 'I prefer concise project updates.',
+    cognitionType: 'contextual_preference',
+    workstreamId,
+  })
+
+  // Two observed choices, with a real alternative available each time.
+  const first = await capture(ctx, {
+    workstreamId, type: 'note',
+    title: 'Chose the short changelog',
+    content: 'Picked the short changelog over the annotated one for the release note.',
+  })
+  const second = await capture(ctx, {
+    workstreamId, type: 'note',
+    title: 'Chose the short summary',
+    content: 'Picked the short summary over the detailed write-up for the review.',
+  })
+
+  let hypothesisId: string | null = null
+  if (first.ok && second.ok) {
+    const outcome = await proposeHypothesis(ctx, {
+      falsifiableDescription:
+        'In observed write-ups for this project, the shorter option was chosen.',
+      context: 'release notes and review summaries',
+      evidenceIds: [first.evidence.id, second.evidence.id],
+      alternativesAvailable: ['annotated changelog', 'detailed write-up'],
+      possibleConfounder: 'both choices were made under time pressure',
+      workstreamId,
+    })
+    if (outcome.formed) hypothesisId = outcome.hypothesis.id
+  }
+
+  return { cognitionId: declared.cognition.id, hypothesisId }
 }
 
 /**

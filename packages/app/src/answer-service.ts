@@ -1,8 +1,8 @@
-import { gatesFor, parseGroundedAnswer, validateGrounding } from '@ava/core'
+import { assertsUserPreference, gatesFor, parseGroundedAnswer, validateGrounding } from '@ava/core'
 import type {
-  ContextPacket, GroundedAnswer, GroundingVerdict, RetrievalResult,
+  CognitionContext, ContextPacket, GroundedAnswer, GroundingVerdict, RetrievalResult,
 } from '@ava/core'
-import { GROUNDED_ANSWER_V1, PromptRegistry, isMockProvider } from '@ava/llm'
+import { GROUNDED_ANSWER_V2, PromptRegistry, isMockProvider } from '@ava/llm'
 import type { ProviderRegistry, SafetyCaps } from '@ava/llm'
 import { buildContextPacket } from '@ava/retrieval'
 import type { ExecutionMode } from '@ava/db'
@@ -30,6 +30,13 @@ export interface AskRequest {
   conversationId?: string | null
   asOf?: Date
   synthetic?: boolean
+  /**
+   * The situation being asked about, for scope matching.
+   *
+   * Only declarations whose scope covers this situation are applied. Omitting
+   * it means only unscoped declarations apply.
+   */
+  cognitionContext?: CognitionContext
 }
 
 export interface AskDeps {
@@ -52,6 +59,10 @@ export interface AskResult {
   executionMode: ExecutionMode
   modelRunId: string | null
   groundingFailures: GroundingVerdict['failures']
+  /** Declarations the answer applied. */
+  declaredCognitionIds: readonly string[]
+  /** Hypotheses the answer reported — always labelled as guesses. */
+  hypothesisIds: readonly string[]
   /** Present when an answer was produced and then rejected. */
   rejectedAnswer: boolean
 }
@@ -61,7 +72,7 @@ const TASK = 'state_query_answer'
 export async function ask(ctx: AppContext, deps: AskDeps, req: AskRequest): Promise<AskResult> {
   const asOf = req.asOf ?? new Date()
   const prompts = deps.prompts ?? new PromptRegistry()
-  const prompt = prompts.get(GROUNDED_ANSWER_V1.id, GROUNDED_ANSWER_V1.version)
+  const prompt = prompts.get(GROUNDED_ANSWER_V2.id, GROUNDED_ANSWER_V2.version)
 
   await ctx.telemetry.record({
     eventType: 'question_received', occurredAt: asOf,
@@ -76,8 +87,15 @@ export async function ask(ctx: AppContext, deps: AskDeps, req: AskRequest): Prom
   })
 
   const built = await buildContextPacket(
-    { retrieval: ctx.retrieval, state: ctx.state, changes: ctx.changes },
-    { question: req.question, workstreamId: req.workstreamId, asOf, synthetic: req.synthetic },
+    {
+      retrieval: ctx.retrieval, state: ctx.state, changes: ctx.changes,
+      cognition: ctx.cognition, hypotheses: ctx.hypotheses, memory: ctx.memory,
+      evidence: ctx.evidence,
+    },
+    {
+      question: req.question, workstreamId: req.workstreamId, asOf,
+      synthetic: req.synthetic, cognitionContext: req.cognitionContext,
+    },
   )
   const packet = built.packet
 
@@ -125,6 +143,18 @@ export async function ask(ctx: AppContext, deps: AskDeps, req: AskRequest): Prom
       uncertainties: packet.gaps,
       groundingValid: null, groundingFailures: [], fallbackUsed: false, errorDetail: null,
     }), localAbstentionText(packet), 'local_only', null, [])
+  }
+
+  // ---- Personal questions are answered LOCALLY ----
+  //
+  // Two reasons, and either alone would be sufficient. Declared Cognition and
+  // Behavioral Hypotheses are the most sensitive things AVA holds (ADR-22,
+  // baseline §26): sending a behavioural profile of the user to a provider to
+  // have it read back to her is a poor trade. And the answer is an enumeration
+  // of what she declared and what AVA guessed — deterministic composition is
+  // not a downgrade here, it is the correct implementation.
+  if (packet.query.kind === 'personal') {
+    return answerPersonallyFromLocalCognition(ctx, req, packet, record, gates)
   }
 
   // ---- Provider path ----
@@ -246,6 +276,11 @@ export async function ask(ctx: AppContext, deps: AskDeps, req: AskRequest): Prom
     answerEvidenceIds: verdict.acceptedEvidenceIds,
     uncertainties,
     groundingValid: true, groundingFailures: [], fallbackUsed: false, errorDetail: null,
+    declaredCognitionIds: verdict.acceptedCognitionIds,
+    hypothesisIds: verdict.acceptedHypothesisIds,
+    knowledgeIds: packet.stabilizedKnowledge
+      .filter((k) => verdict.acceptedEvidenceIds.includes(k.memoryRecordId))
+      .map((k) => k.memoryRecordId),
   })
 
   await ctx.telemetry.record({
@@ -273,6 +308,96 @@ export async function ask(ctx: AppContext, deps: AskDeps, req: AskRequest): Prom
     executionMode,
     modelRunId: outcome.modelRunId,
     groundingFailures: [],
+    declaredCognitionIds: verdict.acceptedCognitionIds,
+    hypothesisIds: verdict.acceptedHypothesisIds,
+    rejectedAnswer: false,
+  }
+}
+
+/**
+ * Answers a personal question from local cognition alone.
+ *
+ * No provider is contacted, so nothing about the user leaves the machine, and
+ * the answer still passes through the same grounding validation as any other:
+ * being composed locally is not a reason to skip the check that it only says
+ * what the context supports.
+ */
+async function answerPersonallyFromLocalCognition(
+  ctx: AppContext,
+  req: AskRequest,
+  packet: ContextPacket,
+  record: (args: RecordArgs) => Promise<string>,
+  gates: ReturnType<typeof gatesFor>,
+): Promise<AskResult> {
+  const composed = composeMockAnswer(packet)
+  const verdict = validateGrounding(composed, packet)
+
+  if (!verdict.valid || composed.abstained) {
+    const text = composed.abstained ? composed.answer : rejectionText(verdict)
+    const drId = await record({
+      executionMode: 'local_only',
+      provider: null, model: null, modelRunId: null,
+      abstained: true,
+      abstentionReason: composed.abstained
+        ? 'nothing declared or observed applies to this context'
+        : 'locally composed answer failed grounding validation',
+      answer: text,
+      answerEvidenceIds: [],
+      uncertainties: packet.gaps,
+      groundingValid: verdict.valid ? null : false,
+      groundingFailures: verdict.failures,
+      fallbackUsed: !verdict.valid,
+      errorDetail: null,
+    })
+    return finishAbstention(ctx, req, packet, drId, text, 'local_only', null, verdict.failures)
+  }
+
+  const uncertainties = gates.mustShowGaps
+    ? [...composed.uncertainties, ...packet.gaps]
+    : composed.uncertainties
+
+  const drId = await record({
+    executionMode: 'local_only',
+    provider: null, model: null, modelRunId: null,
+    abstained: false, abstentionReason: null,
+    answer: composed.answer,
+    answerEvidenceIds: verdict.acceptedEvidenceIds,
+    uncertainties,
+    groundingValid: true, groundingFailures: [], fallbackUsed: false, errorDetail: null,
+    declaredCognitionIds: verdict.acceptedCognitionIds,
+    hypothesisIds: verdict.acceptedHypothesisIds,
+  })
+
+  await ctx.telemetry.record({
+    eventType: 'grounded_answer_generated', occurredAt: new Date(),
+    subjectType: 'decision_record', subjectId: drId, workstreamId: req.workstreamId,
+    contextHealth: packet.health.state, decisionRecordId: drId,
+    payload: {
+      mode: 'local_only',
+      declarations: verdict.acceptedCognitionIds.length,
+      hypotheses: verdict.acceptedHypothesisIds.length,
+    },
+  })
+  await ctx.telemetry.record({
+    eventType: 'answer_shown', occurredAt: new Date(),
+    subjectType: 'decision_record', subjectId: drId, workstreamId: req.workstreamId,
+    contextHealth: packet.health.state, decisionRecordId: drId,
+  })
+  await appendChatTurn(ctx, req, drId, composed.answer, false, packet.health.state)
+
+  return {
+    answer: composed.answer,
+    abstained: false,
+    uncertainties: dedupe(uncertainties),
+    evidence: packet.retrieved.filter((r) => verdict.acceptedEvidenceIds.includes(r.evidenceId)),
+    packet,
+    decisionRecordId: drId,
+    contextHealth: packet.health,
+    executionMode: 'local_only',
+    modelRunId: null,
+    groundingFailures: [],
+    declaredCognitionIds: verdict.acceptedCognitionIds,
+    hypothesisIds: verdict.acceptedHypothesisIds,
     rejectedAnswer: false,
   }
 }
@@ -293,6 +418,9 @@ type RecordArgs = {
   groundingFailures: GroundingVerdict['failures']
   fallbackUsed: boolean
   errorDetail: string | null
+  declaredCognitionIds?: readonly string[]
+  hypothesisIds?: readonly string[]
+  knowledgeIds?: readonly string[]
 }
 
 function makeRecorder(
@@ -328,6 +456,18 @@ function makeRecorder(
       abstentionReason: args.abstentionReason,
       fallbackUsed: args.fallbackUsed,
       errorDetail: args.errorDetail,
+      // Which personal cognition the answer actually applied, and under what
+      // authority. Without this, "why did AVA apply this preference here?" is
+      // unanswerable after the fact.
+      declaredCognitionIds: args.declaredCognitionIds ?? [],
+      hypothesisIds: args.hypothesisIds ?? [],
+      knowledgeIds: args.knowledgeIds ?? [],
+      cognitiveAuthority: packet.declaredCognition.length > 0
+        ? packet.declaredCognition[0]!.authority
+        : packet.behavioralHypotheses.length > 0 ? 'HYPOTHESIS' : 'NONE',
+      scopeMatch: Object.fromEntries(
+        packet.declaredCognition.map((c) => [c.cognitionId, c.matchReason]),
+      ),
     })
 }
 
@@ -361,6 +501,8 @@ async function finishAbstention(
     executionMode,
     modelRunId,
     groundingFailures: failures,
+    declaredCognitionIds: [],
+    hypothesisIds: [],
     rejectedAnswer: false,
   }
 }
@@ -399,6 +541,34 @@ function buildUserMessage(packet: ContextPacket, items: { id: string; text: stri
   if (packet.conflicts.length > 0) {
     lines.push('Unresolved conflicts. Do not resolve these; report them:')
     for (const c of packet.conflicts) lines.push(`- ${c}`)
+  }
+
+  if (packet.declaredCognition.length > 0) {
+    // Metadata only. The WORDS live in the evidence block below, where they
+    // have been through classification and redaction like everything else —
+    // printing `content` here would be a second, unredacted path across the
+    // boundary for the most sensitive text AVA holds.
+    lines.push('', 'DECLARED BY THE USER — highest authority. You may state these as things the',
+      'user told you. Each applies only in the scope shown, and its wording is the',
+      'evidence item listed beside it.')
+    for (const c of packet.declaredCognition) {
+      lines.push(`- [${c.cognitionId}] (${c.cognitionType}, ${c.authority})` +
+        ` wording: ${c.evidenceIds.join(', ') || 'not available'}`)
+      lines.push(`  scope: ${c.scopeDescription} | why it applies: ${c.matchReason}`)
+    }
+  }
+  if (packet.stabilizedKnowledge.length > 0) {
+    lines.push('', 'EVIDENCE-BACKED KNOWLEDGE — supported by the ledger, not a personal statement:')
+    for (const k of packet.stabilizedKnowledge) {
+      lines.push(`- [${k.memoryRecordId}] (${k.strength}) evidence: ${k.derivedFromEvidenceIds.join(', ')}`)
+    }
+  }
+  // Behavioral Hypotheses are NOT sent. They are AVA's own inferences about
+  // the user, they ground nothing, and shipping a behavioural profile to a
+  // provider to have it summarised back is exactly the trade ADR-22 refuses.
+  if (packet.behavioralHypotheses.length > 0) {
+    lines.push('', `${packet.behavioralHypotheses.length} observed pattern(s) exist and were` +
+      ' deliberately withheld. Do not speculate about them.')
   }
 
   lines.push('', 'EVIDENCE. Use only these items. Cite by id.')

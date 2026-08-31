@@ -24,6 +24,8 @@ function input(over: Partial<HealthInput> = {}): HealthInput {
     retrieved: [hit('A')],
     withheldCount: 0,
     withheldMaterial: false,
+    declaredCognitionCount: 0,
+    hypothesisCount: 0,
     now: NOW,
     ...over,
   }
@@ -32,7 +34,7 @@ function input(over: Partial<HealthInput> = {}): HealthInput {
 describe('context health dimensions', () => {
   it('computes all ten dimensions, always', () => {
     const r = assessHealth(input())
-    expect(r.dimensions).toHaveLength(10)
+    expect(r.dimensions).toHaveLength(11)
     expect(r.state).toBe('HEALTHY')
   })
 

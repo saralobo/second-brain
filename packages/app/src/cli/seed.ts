@@ -1,4 +1,6 @@
-import { getContext, seedProjectAlpha, seedSupersedingEvidence } from '@ava/app'
+import {
+  getContext, seedDeclaredCognition, seedProjectAlpha, seedSupersedingEvidence,
+} from '@ava/app'
 
 /**
  * Seeds the synthetic Project Alpha scenario.
@@ -9,6 +11,12 @@ const seed = await seedProjectAlpha(ctx)
 console.log(`workstream   ${seed.workstreamId}`)
 console.log(`decision     ${seed.decisionObjectId}`)
 console.log(`dependent    ${seed.artifactObjectId}`)
+
+if (process.argv.includes('--cognition')) {
+  const cognition = await seedDeclaredCognition(ctx, seed.workstreamId)
+  console.log(`declaration  ${cognition.cognitionId}`)
+  console.log(`hypothesis   ${cognition.hypothesisId ?? 'none formed'}`)
+}
 
 if (process.argv.includes('--supersede')) {
   await seedSupersedingEvidence(ctx, seed.workstreamId, seed.decisionObjectId)
