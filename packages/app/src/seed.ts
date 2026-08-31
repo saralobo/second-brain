@@ -134,3 +134,119 @@ export async function seedSupersedingEvidence(
     supersedesStateObjectId: decisionObjectId,
   })
 }
+
+/**
+ * The proactive scenario (Slice 5).
+ *
+ * A decision with a dependent artifact, a commitment falling due with
+ * unfinished supporting work, an open question tied to that commitment, and a
+ * risk whose mitigation window is closing. Enough to exercise all five
+ * opportunity classes.
+ *
+ * Entirely fictional, like everything else in this file. Running it produces
+ * opportunities; producing opportunities is not evidence that the product
+ * thesis holds.
+ */
+export interface ProactiveSeedResult {
+  workstreamId: string
+  decisionObjectId: string
+  artifactObjectId: string
+  commitmentObjectId: string
+  questionObjectId: string
+  riskObjectId: string
+}
+
+export async function seedProactiveScenario(
+  ctx: AppContext, now: Date = new Date(),
+): Promise<ProactiveSeedResult> {
+  const day = 86_400_000
+  const iso = (offsetDays: number) => new Date(now.getTime() + offsetDays * day).toISOString()
+
+  const ws = await ctx.workstreams.create(
+    'Project Alpha — proactive',
+    'Synthetic scenario for the opportunity engine. Not real work, not validation evidence.',
+  )
+
+  const goal = await capture(ctx, {
+    workstreamId: ws.id, type: 'goal',
+    title: 'Ship the Alpha reader to the pilot group',
+    content: 'The pilot group should be reading and annotating documents by the end of the month.',
+  })
+
+  const decision = await capture(ctx, {
+    workstreamId: ws.id, type: 'decision',
+    title: 'Use architecture A for annotation storage',
+    content: 'Annotations are written to a local store. Architecture A, chosen for offline reliability.',
+  })
+  if (!decision.ok || !decision.change) throw new Error('seed: decision failed')
+  const decisionObjectId = decision.change.objectId
+
+  const artifact = await capture(ctx, {
+    workstreamId: ws.id, type: 'artifact',
+    title: 'Proposal based on architecture A',
+    content: 'A written proposal for the pilot, built on the local-store design of architecture A.',
+    fields: { dependsOn: decisionObjectId },
+  })
+  if (!artifact.ok || !artifact.change) throw new Error('seed: artifact failed')
+  const artifactObjectId = artifact.change.objectId
+
+  const commitment = await capture(ctx, {
+    workstreamId: ws.id, type: 'commitment',
+    title: 'Present the pilot plan to the group',
+    content: 'A short presentation of the pilot plan is due to the group.',
+    fields: { dueAt: iso(2) },
+  })
+  if (!commitment.ok || !commitment.change) throw new Error('seed: commitment failed')
+  const commitmentObjectId = commitment.change.objectId
+
+  const question = await capture(ctx, {
+    workstreamId: ws.id, type: 'question',
+    title: 'Do pilot users need annotations on more than one device?',
+    content: 'Unanswered. It shapes whether the local-only design is enough for the pilot.',
+  })
+  if (!question.ok || !question.change) throw new Error('seed: question failed')
+  const questionObjectId = question.change.objectId
+
+  const risk = await capture(ctx, {
+    workstreamId: ws.id, type: 'risk',
+    title: 'Pilot devices may be reimaged before the session',
+    content: 'IT reimages shared laptops on a schedule. Annotations held locally would be lost.',
+    fields: { mitigationUntil: iso(3) },
+  })
+  if (!risk.ok || !risk.change) throw new Error('seed: risk failed')
+  const riskObjectId = risk.change.objectId
+
+  // Declared relations. Nothing is inferred: AVA follows dependencies the
+  // user stated, and only those.
+  const ev = artifact.evidence.id
+  await ctx.state.addRelationship(
+    newRelationship(artifactObjectId, 'artifact', decisionObjectId, 'decision', 'depends_on', [ev]))
+  await ctx.state.addRelationship(
+    newRelationship(artifactObjectId, 'artifact', commitmentObjectId, 'commitment', 'part_of', [ev]))
+  await ctx.state.addRelationship(
+    newRelationship(questionObjectId, 'question', commitmentObjectId, 'commitment', 'affects', [ev]))
+  if (goal.ok) {
+    await ctx.state.addRelationship(
+      newRelationship(commitmentObjectId, 'commitment', goal.change?.objectId ?? '', 'goal',
+        'part_of', [goal.evidence.id]))
+  }
+
+  return {
+    workstreamId: ws.id, decisionObjectId, artifactObjectId,
+    commitmentObjectId, questionObjectId, riskObjectId,
+  }
+}
+
+/** Replaces architecture A with B. This is what makes the proposal stale. */
+export async function seedArchitectureBCorrection(
+  ctx: AppContext, workstreamId: string, decisionObjectId: string,
+): Promise<void> {
+  await capture(ctx, {
+    workstreamId, type: 'correction',
+    title: 'Architecture B replaces architecture A',
+    content:
+      'Two pilot laptops were reimaged and lost their annotations. Architecture B, with an ' +
+      'encrypted synced store, replaces architecture A.',
+    supersedesStateObjectId: decisionObjectId,
+  })
+}

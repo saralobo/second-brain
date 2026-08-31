@@ -48,13 +48,45 @@ export interface HealthInput {
   hypothesisCount: number
   /** Freshest evidence AVA holds for this workstream, if any. */
   now: Date
+  /**
+   * Dimensions material to a task that is not a question (Slice 5).
+   *
+   * Health is computed PER TASK, and proactive generation is a different task
+   * from answering: an outdated artifact is decisive when AVA is about to tell
+   * someone their work may be stale, and merely informative when they asked
+   * what changed in March. Supplying this replaces the query-kind materiality.
+   */
+  materialOverride?: readonly HealthDimensionId[]
 }
+
+/**
+ * Dimensions that decide health for proactive opportunity generation.
+ *
+ * Two dimensions are deliberately NOT material here, and the reasons matter:
+ *
+ *  - `expected_sources_available` measures what retrieval returned, and
+ *    retrieval does not run on this path. Feeding it an empty result would
+ *    report "no sources" for a task that never asked for any.
+ *  - `artifacts_without_current_version` counts outdated artifacts, which is
+ *    the very condition an `unpropagated_decision` reports. Treating it as a
+ *    health gap would make AVA declare herself unfit to raise exactly the
+ *    thing she just detected. Found while wiring this path (F-07).
+ *
+ * What remains are genuine limits on what AVA can see when speaking unasked.
+ */
+export const OPPORTUNITY_GENERATION_DIMENSIONS: readonly HealthDimensionId[] = [
+  'source_freshness',
+  'temporal_coverage',
+  'unresolved_contradictions',
+  'permission_blocked_coverage',
+  'lineage_completeness',
+] as const
 
 const STALE_DAYS = 45
 
 export function assessHealth(input: HealthInput): ContextHealthResult {
   const { signals, retrieved } = input
-  const material = new Set(MATERIAL[input.queryKind])
+  const material = new Set(input.materialOverride ?? MATERIAL[input.queryKind])
   const dims: HealthDimension[] = []
 
   const add = (

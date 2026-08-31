@@ -1,6 +1,6 @@
 import {
   detectChange, projectCurrentState, propagateImpact, newRelationship,
-  INITIAL_STATUS, isStateObjectType, withCandidateDependencies,
+  INITIAL_STATUS, canTransition, isStateObjectType, weakestOf, withCandidateDependencies,
 } from '@ava/core'
 import type {
   ChangeRecord, CurrentStateView, ImpactedObject, StateObjectType,
@@ -181,6 +181,39 @@ async function recordDependencyImpact(
     detector: 'stage3_rules',
   }
   await ctx.changes.append(impactChange)
+
+  // GS-02, completing the scenario Slice 2 opened. An ARTIFACT that declares a
+  // dependency on something just superseded or invalidated moves to
+  // `outdated`.
+  //
+  // The transition is narrow on purpose: only artifacts, only at depth 1, only
+  // along a dependency the user declared, and only when the artifact has not
+  // been revised since. `outdated` says "this was written against something
+  // that has moved" — it does not say the work is wrong, and the version that
+  // existed before stays fully readable.
+  if (
+    latest.type === 'artifact'
+    && target.reason === 'potentially_outdated'
+    && target.depth === 1
+    && latest.observedAt.getTime() <= source.observedAt.getTime()
+    && canTransition('artifact', latest.status, 'outdated')
+  ) {
+    await ctx.state.appendVersion({
+      objectId: latest.objectId,
+      type: latest.type,
+      workstreamId: latest.workstreamId,
+      version: latest.version + 1,
+      status: 'outdated',
+      title: latest.title,
+      fields: latest.fields,
+      evidenceIds: [...latest.evidenceIds, evidence.id],
+      strength: weakestOf([latest.strength, source.strength]),
+      sensitivity: latest.sensitivity,
+      observedAt: source.observedAt,
+      effectiveAt: latest.effectiveAt,
+      effectiveAtInferred: latest.effectiveAtInferred,
+    })
+  }
 }
 
 function summarise(content: string): string {

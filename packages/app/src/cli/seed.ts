@@ -1,5 +1,6 @@
 import {
-  getContext, seedDeclaredCognition, seedProjectAlpha, seedSupersedingEvidence,
+  getContext, seedArchitectureBCorrection, seedDeclaredCognition, seedProactiveScenario,
+  seedProjectAlpha, seedSupersedingEvidence,
 } from '@ava/app'
 
 /**
@@ -21,5 +22,15 @@ if (process.argv.includes('--cognition')) {
 if (process.argv.includes('--supersede')) {
   await seedSupersedingEvidence(ctx, seed.workstreamId, seed.decisionObjectId)
   console.log('superseding evidence captured')
+}
+if (process.argv.includes('--proactive')) {
+  const proactive = await seedProactiveScenario(ctx)
+  console.log(`proactive ws ${proactive.workstreamId}`)
+  console.log(`decision     ${proactive.decisionObjectId}`)
+  console.log(`artifact     ${proactive.artifactObjectId}`)
+  if (process.argv.includes('--supersede')) {
+    await seedArchitectureBCorrection(ctx, proactive.workstreamId, proactive.decisionObjectId)
+    console.log('architecture B correction captured')
+  }
 }
 await ctx.db.close()
