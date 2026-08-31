@@ -10,7 +10,13 @@ Current strategy:
 PROSPECTIVE INSTRUMENTED VALIDATION
 
 Current product phase:
-TECHNICAL V0 SPECIFICATION
+V0 FUNCTIONALLY COMPLETE — PROSPECTIVE VALIDATION READINESS
+
+Readiness audit:
+READY WITH LIMITATIONS
+
+Prospective Validation Protocol:
+NOT CREATED
 
 Hypotheses:
 H-01 H-02 H-03 H-04 H-05 H-06 — ALL NOT TESTED
@@ -31,6 +37,8 @@ Architecture baseline:
 - **Protocol:** [Validation Sprint 0 Protocol v0.1](validation-sprint-0-protocol-v0.1.md) — `READY FOR EXECUTION`
 - **Decision pack:** [Pre-Execution Decisions v0.1](pre-execution-decisions-v0.1.md) — `LOCKED` em 2026-08-30
 - **Current strategy:** [Prospective Validation Strategy v0.1](prospective-validation-strategy-v0.1.md) — `ADOPTED`
+- **Readiness audit:** [Prospective Validation Readiness Audit v0.1](prospective-validation-readiness-audit-v0.1.md) — `READY WITH LIMITATIONS`, 2026-08-31
+- **Prospective Validation Protocol:** `NOT CREATED`
 - **Technical spec:** [AVA Technical V0 Specification v0.1](../specification/ava-technical-v0-specification-v0.1.md) — `DRAFT FOR IMPLEMENTATION PLANNING`
 - **Experiment log:** [sprint-0-experiment-log.md](observations/sprint-0-experiment-log.md) — `BLOCKED — CANDIDATE SOURCE FAILED ELIGIBILITY`
 - **Architecture baseline:** [Architecture Package v0.2 Final](../architecture/architecture-package-v0.2-final.md) — tag `architecture-v0.2-final`
@@ -110,4 +118,14 @@ O protocolo histórico e o decision lock permanecem inalterados e podem fornecer
 
 ## Próximo gate
 
-Criar o AVA V0 Implementation Plan v0.1.
+Criar o Prospective Validation Protocol v0.1.
+
+A V0 está `FUNCTIONALLY COMPLETE` e a auditoria de instrumentação concluiu
+`READY WITH LIMITATIONS`: o rastro de evidência reconstrói ponta a ponta a
+partir de registros escritos no momento, sem inferência e sem timestamp
+fabricado. As limitações — nenhuma chamada real de modelo, relações não
+declaradas invisíveis, `user_seen_at` inobservável — estão nomeadas na
+auditoria e devem restringir o escopo do protocolo, não ser contornadas.
+
+**Nenhuma hipótese foi testada.** H-01 a H-06 permanecem `NOT TESTED` e o Gate
+B do ADR-21 permanece `OPEN`.

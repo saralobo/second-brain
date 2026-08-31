@@ -2,13 +2,19 @@
 
 ```text
 Current phase:
-SLICE 3 PROVIDER GATE
+PROSPECTIVE VALIDATION READINESS
 
 Current plan:
 ava-v0-implementation-plan-v0.1.md
 
 Implementation status:
-BATCH 1 COMPLETE
+AVA V0 FUNCTIONALLY COMPLETE
+
+Prospective Validation Readiness:
+READY WITH LIMITATIONS
+
+Prospective Validation Protocol:
+NOT CREATED
 
 Provider gate:
 IMPLEMENTED — AWAITING CONTROLLED PROVIDER VERIFICATION
@@ -45,8 +51,13 @@ Nenhum código de produto foi escrito. O repositório contém apenas documentaç
 | Batch | Escopo | Status |
 | --- | --- | --- |
 | **Batch 1** | Slice 0 + Slice 1 + Slice 2 — 38 tarefas, `S0-T01` a `S2-T12` | `COMPLETE` · **ACCEPTED** em 2026-08-30 |
-| Batch 2 | Slice 3 — Chat + Retrieval | `NOT STARTED` · parte provider-independente **desbloqueada** |
-| Batch 3+ | Slices 4–7 | não planejado em detalhe |
+| Slice 3 | Chat + Retrieval | `FUNCTIONALLY COMPLETE — REAL PROVIDER VERIFICATION PENDING` |
+| Slice 4 | Memory + Declared Cognition | `COMPLETE` |
+| Slice 5 | Opportunity + Briefing | `COMPLETE` |
+| Slice 6 | Feedback + Outcomes | `COMPLETE` |
+| Slice 7 | Prospective Validation Audit | `COMPLETE` |
+
+Milestones 1 a 6 alcançados. Nenhuma chamada externa de modelo foi feita em nenhum deles.
 
 O Batch 1 terminou no **Milestone 1 — Capture and Change Loop**, alcançado sem nenhuma chamada de modelo. A revisão formal está no [provider gate](slice-3-provider-gate-v0.1.md).
 
@@ -56,12 +67,23 @@ O provider gate foi implementado: F-01 e F-02 corrigidos, `ModelRun` persistente
 
 Todas as quinze tarefas do Slice 3 estão `READY`. Falta apenas rodar a chamada controlada quando houver chave.
 
+## Gate atual
+
+`PROSPECTIVE VALIDATION READINESS`
+
+A [auditoria de readiness](../validation/prospective-validation-readiness-audit-v0.1.md)
+concluiu `READY WITH LIMITATIONS`. Duas lacunas de instrumentação que teriam
+invalidado a medição foram encontradas e corrigidas (F-15, F-16); nenhum blocker
+permanece.
+
 ## Gates posteriores
 
 | Gate | Bloqueia |
 | --- | --- |
-| Verificação controlada do provider | marcar o gate como verificado; exige `ANTHROPIC_API_KEY` e `npm run provider:smoke` |
+| Verificação controlada do provider | qualidade e custo reais; exige `ANTHROPIC_API_KEY` e `npm run provider:smoke` |
 | Gate B do ADR-21 | qualquer expansão de escopo |
 | Prospective Validation Protocol | início da validação prospectiva |
 
-Nenhuma hipótese está validada. H-01 a H-06 permanecem `NOT TESTED`.
+**Software completo não é hipótese validada.** A V0 está funcionalmente
+completa; H-01 a H-06 permanecem `NOT TESTED`, o Gate B do ADR-21 permanece
+`OPEN`, e nenhuma chamada real de modelo foi feita.
