@@ -44,7 +44,7 @@ pela continuidade — sem depender de texto nem de cor.
 
 | | |
 | --- | --- |
-| Tipografia | SF Pro pelo stack de sistema, Inter de reserva. JetBrains Mono só para identificadores, horários e métricas |
+| Tipografia | SF Pro pelo stack de sistema, Inter de reserva. JetBrains Mono só para identificadores, horários e métricas. Ver [FONTS.md](FONTS.md) |
 | Caixa alta | Proibida em toda a interface |
 | Fundo | `#05060A` com campo de degradê atravessando a tela, em deriva lenta |
 | Acento | `#1B4DFF` como sinal de atividade cognitiva, `#4DD8FF` e `#7B5CFF` na iridescência |
