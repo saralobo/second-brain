@@ -1,0 +1,908 @@
+<title>Protótipo AVA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --void:#05060A;--surface:#0B0E16;
+  --glass:rgba(255,255,255,.05);--glass-2:rgba(255,255,255,.08);
+  --line:rgba(255,255,255,.10);--line-soft:rgba(255,255,255,.06);
+  --electric:#1B4DFF;--cyan:#4DD8FF;--violet:#7B5CFF;
+  --amber:#E0B062;--alert:#FF6B4D;--ok:#5FD0A4;
+  --text:#F2F4F8;--text-2:#98A2B3;--text-3:#5B6472;
+  --ui:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter","Helvetica Neue",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box}
+body{
+  background:var(--void);color:var(--text);font-family:var(--ui);
+  font-size:15px;line-height:1.5;letter-spacing:-.011em;
+  -webkit-font-smoothing:antialiased;padding:34px 20px 72px;
+}
+.mono{font-family:var(--mono);letter-spacing:0}
+h1,h2,h3,h4,p,ul,ol{margin:0}
+ul{padding:0;list-style:none}
+.page{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+
+.intro{display:flex;flex-direction:column;gap:10px}
+.eyebrow{font-family:var(--mono);font-size:11px;color:var(--text-3)}
+.intro h1{font-size:30px;font-weight:600;letter-spacing:-.025em;text-wrap:balance}
+.intro p{color:var(--text-2);font-size:16px;max-width:70ch;line-height:1.6}
+
+/* ---------- window ---------- */
+.window{
+  position:relative;border:1px solid var(--line);border-radius:24px;
+  background:var(--surface);overflow:hidden;isolation:isolate;
+  box-shadow:0 40px 110px rgba(0,0,0,.6);
+}
+.field{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.field span{
+  position:absolute;border-radius:50%;filter:blur(76px);mix-blend-mode:screen;
+  animation:drift 36s var(--ease) infinite alternate;
+  transition:background .9s var(--ease),opacity .9s var(--ease);
+}
+@keyframes drift{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(3%,-4%,0) scale(1.13)}}
+.chrome{
+  position:relative;z-index:2;display:flex;align-items:center;gap:14px;
+  padding:0 16px;height:40px;border-bottom:1px solid var(--line-soft);
+  background:rgba(5,6,10,.42);backdrop-filter:blur(20px);
+}
+.dots{display:flex;gap:7px}
+.dots i{width:10px;height:10px;border-radius:999px;background:rgba(255,255,255,.13)}
+.chrome .path{font-family:var(--mono);font-size:11px;color:var(--text-3)}
+.shell{position:relative;z-index:2;display:grid;grid-template-columns:196px minmax(0,1fr) 296px;min-height:690px}
+
+/* ---------- rail ---------- */
+.rail{border-right:1px solid var(--line-soft);padding:20px 12px;display:flex;flex-direction:column;gap:22px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+.wordmark{font-size:15px;font-weight:600;letter-spacing:.04em}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav-label{font-size:12px;color:var(--text-3);padding:0 8px;margin-bottom:5px}
+.nav button{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:8px;border-radius:10px;border:0;background:transparent;cursor:pointer;
+  color:var(--text-2);font-family:var(--ui);font-size:14px;text-align:left;
+  letter-spacing:-.011em;
+  transition:background .2s var(--ease),color .2s var(--ease);
+}
+.nav button svg{width:15px;height:15px;flex:none;stroke:currentColor;fill:none;stroke-width:1.5}
+.nav button:hover{background:var(--glass);color:var(--text)}
+.nav button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.nav button[aria-current="page"]{background:var(--glass-2);color:var(--text)}
+.nav button[aria-current="page"] svg{color:var(--cyan)}
+.rail-foot{margin-top:auto;padding:0 8px;display:flex;flex-direction:column;gap:9px;font-size:12px;color:var(--text-3)}
+.rail-foot .row{display:flex;justify-content:space-between;align-items:center}
+kbd{font-family:var(--mono);font-size:11px;color:var(--text-2);border:1px solid var(--line);border-radius:5px;padding:2px 5px;background:rgba(255,255,255,.03)}
+
+/* ---------- main ---------- */
+.main{padding:30px 38px 0;display:flex;flex-direction:column;min-width:0}
+.view{display:none;flex-direction:column;flex:1;min-width:0}
+.view.on{display:flex}
+
+.head{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+.head h2{font-size:24px;font-weight:600;letter-spacing:-.025em}
+.head p{color:var(--text-2);font-size:14.5px;max-width:70ch}
+
+.block{margin-bottom:22px;display:flex;flex-direction:column;gap:9px}
+.block > h3{font-size:13px;color:var(--text-3);font-weight:400}
+
+.card{
+  border-radius:14px;padding:15px 17px;background:var(--glass);
+  border:1px solid var(--line-soft);display:flex;flex-direction:column;gap:8px;
+  transition:background .2s var(--ease),border-color .2s var(--ease);
+}
+.card:hover{background:var(--glass-2);border-color:var(--line)}
+.card h4{font-size:15.5px;font-weight:500;letter-spacing:-.015em}
+.card p{font-size:14px;color:var(--text-2);line-height:1.55}
+.tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{
+  font-size:12px;color:var(--text-3);border:1px solid var(--line-soft);
+  border-radius:999px;padding:2px 9px;white-space:nowrap;
+}
+.tag.ws{color:var(--cyan);border-color:rgba(77,216,255,.28)}
+.tag.strength{font-family:var(--mono);font-size:11px;color:var(--text-2)}
+.tag.health-ok{color:var(--ok);border-color:rgba(95,208,164,.3)}
+.tag.health-deg{color:var(--amber);border-color:rgba(224,176,98,.34)}
+.tag.health-ins{color:var(--text-3);border-style:dashed}
+.tag.time{color:var(--amber);border-color:rgba(224,176,98,.3)}
+.why{
+  font-size:13px;color:var(--text-2);background:none;border:0;padding:0;cursor:pointer;
+  font-family:var(--ui);letter-spacing:-.011em;text-align:left;
+  border-bottom:1px solid rgba(77,216,255,.3);align-self:flex-start;
+  transition:color .2s var(--ease),border-color .2s var(--ease);
+}
+.why:hover{color:var(--cyan);border-color:var(--cyan)}
+.why:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* declared vs inferred — the dashed border must survive the restyle */
+.card.declared{border-left:2px solid var(--cyan)}
+.card.inferred{border-style:dashed;border-color:rgba(255,255,255,.16)}
+.card.superseded{opacity:.55}
+.card.superseded h4{text-decoration:line-through;text-decoration-color:var(--text-3)}
+
+.notice{
+  border-radius:14px;padding:14px 17px;margin-bottom:20px;
+  background:rgba(224,176,98,.07);border:1px solid rgba(224,176,98,.26);
+  display:flex;flex-direction:column;gap:6px;
+}
+.notice strong{font-weight:500;font-size:14.5px;color:#F0D8AC}
+.notice li{font-size:13.5px;color:var(--text-2)}
+.empty{
+  border-radius:14px;padding:20px 17px;border:1px dashed var(--line);
+  color:var(--text-3);font-size:14px;text-align:center;
+}
+
+/* ---------- presence ---------- */
+.presence{display:flex;flex-direction:column;align-items:center;gap:12px;padding-bottom:22px}
+.wave{width:100%;max-width:540px;height:112px;display:block}
+.state-line{font-size:12px;color:var(--text-3)}
+.state-line b{color:var(--cyan);font-weight:400}
+.state-line.warn b{color:var(--amber)}
+.state-line.dim b{color:var(--text-3)}
+.speech{max-width:56ch;text-align:center}
+.speech h3{font-size:22px;font-weight:400;letter-spacing:-.026em;line-height:1.36;text-wrap:balance}
+
+/* ---------- conversation ---------- */
+.thread{display:flex;flex-direction:column;gap:18px;padding-bottom:20px}
+.turn{display:flex;flex-direction:column;gap:8px;max-width:64ch}
+.turn.me{align-self:flex-end;align-items:flex-end}
+.turn .who{font-size:12px;color:var(--text-3)}
+.bubble{
+  border-radius:16px;padding:13px 16px;font-size:15px;line-height:1.55;
+  background:var(--glass);border:1px solid var(--line-soft);
+}
+.turn.me .bubble{background:rgba(27,77,255,.14);border-color:rgba(27,77,255,.3)}
+.turn.ava .bubble{background:var(--glass)}
+.turn.ava .bubble.abstain{border-color:rgba(224,176,98,.3);background:rgba(224,176,98,.06)}
+.grounded{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--text-3)}
+
+.composer{
+  margin-top:auto;display:flex;align-items:center;gap:13px;
+  padding:11px 13px;margin-bottom:20px;border-radius:999px;
+  background:var(--glass);border:1px solid var(--line);
+  backdrop-filter:blur(28px) saturate(140%);
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 24px 60px rgba(0,0,0,.45);
+}
+.mic{
+  width:38px;height:38px;flex:none;border-radius:999px;border:1px solid rgba(255,255,255,.16);
+  background:linear-gradient(160deg,#3A6BFF,#0A2AA8);display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 0 28px rgba(27,77,255,.5);transition:box-shadow .4s var(--ease);
+}
+.mic:hover{box-shadow:0 0 40px rgba(27,77,255,.8)}
+.mic:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.mic svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:1.6}
+.composer .ph{flex:1;color:var(--text-3);font-size:15px}
+.composer .hint{font-family:var(--mono);font-size:11px;color:var(--text-3)}
+.scope{
+  font-size:12.5px;color:var(--text-2);border:1px solid var(--line);
+  border-radius:999px;padding:4px 11px;background:rgba(255,255,255,.03);
+}
+
+/* ---------- aside ---------- */
+.aside{border-left:1px solid var(--line-soft);padding:28px 20px;display:flex;flex-direction:column;gap:18px;overflow:hidden}
+.panel{
+  border-radius:16px;padding:16px;background:var(--glass);border:1px solid var(--line);
+  backdrop-filter:blur(28px) saturate(140%);
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 24px 60px rgba(0,0,0,.45);
+  display:flex;flex-direction:column;gap:10px;
+}
+.panel .lbl{font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:7px}
+.panel .lbl i{width:5px;height:5px;border-radius:999px;background:var(--cyan);flex:none}
+.panel p{font-size:14px;line-height:1.55;color:var(--text)}
+.panel p.dim{color:var(--text-2);font-size:13.5px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{
+  font-family:var(--ui);font-size:13px;padding:7px 13px;border-radius:9px;cursor:pointer;
+  border:1px solid var(--line);background:transparent;color:var(--text-2);
+  letter-spacing:-.011em;
+  transition:background .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease);
+}
+.btn:hover{background:var(--glass-2);color:var(--text)}
+.btn:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.btn.primary{background:var(--electric);border-color:var(--electric);color:#fff}
+.btn.primary:hover{background:#2F60FF;border-color:#2F60FF}
+.ledger{display:flex;flex-direction:column;gap:9px}
+.ledger li{font-size:12.5px;color:var(--text-2);line-height:1.5;padding-bottom:9px;border-bottom:1px solid var(--line-soft)}
+.ledger li:last-child{border-bottom:0;padding-bottom:0}
+.ledger .id{font-family:var(--mono);font-size:11px;color:var(--cyan)}
+
+/* ---------- state gallery ---------- */
+.gallery{display:flex;flex-direction:column;gap:14px}
+.gallery-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.gallery-head h2{font-size:21px;font-weight:600;letter-spacing:-.02em}
+.gallery-head p{color:var(--text-2);font-size:15px;flex-basis:100%;max-width:74ch;line-height:1.55}
+.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:12px}
+.st{
+  border:1px solid var(--line-soft);border-radius:14px;background:var(--surface);
+  padding:16px;display:flex;flex-direction:column;gap:10px;cursor:pointer;text-align:left;
+  font-family:var(--ui);color:var(--text);letter-spacing:-.011em;
+  transition:border-color .2s var(--ease),background .2s var(--ease);
+}
+.st:hover{border-color:var(--line);background:var(--glass)}
+.st:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.st[aria-pressed="true"]{border-color:var(--cyan);background:var(--glass)}
+.st canvas{width:100%;height:56px;display:block}
+.st .nm{font-size:14.5px;font-weight:500}
+.st .ds{font-size:13px;color:var(--text-2);line-height:1.5}
+
+@media (max-width:1080px){
+  .shell{grid-template-columns:1fr}
+  .rail,.aside{border:0;border-top:1px solid var(--line-soft)}
+  .rail{order:2}.main{order:1;padding:26px 22px 0}.aside{order:3}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+}
+</style>
+
+<div class="page">
+
+  <header class="intro">
+    <span class="eyebrow mono">DNA Criativo Ava · protótipo do produto</span>
+    <h1>Todo o front da Ava na identidade aprovada</h1>
+    <p>As seis superfícies reais do produto — Live, Today, Ask, Workstreams, Memory e Why — com os dados do cenário Project&nbsp;Alpha e o contrato epistêmico intacto: força ordinal ao lado de cada afirmação, saúde de contexto por item, declarado distinto de inferido, e rota para Why em toda assertiva. Navegue pelo rail à esquerda.</p>
+  </header>
+
+  <section class="window" aria-label="Protótipo da Ava">
+    <div class="field" aria-hidden="true">
+      <span id="f1" style="width:78%;height:52%;left:11%;top:2%;background:#1B4DFF;opacity:.26"></span>
+      <span id="f2" style="width:50%;height:46%;left:-6%;top:24%;background:#4DD8FF;opacity:.13;animation-delay:-13s"></span>
+      <span id="f3" style="width:54%;height:50%;left:53%;top:40%;background:#7B5CFF;opacity:.19;animation-delay:-23s"></span>
+    </div>
+
+    <div class="chrome">
+      <div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>
+      <span class="path mono" id="chrome-path">ava — today</span>
+    </div>
+
+    <div class="shell">
+
+      <!-- ============ rail ============ -->
+      <nav class="rail" aria-label="Navegação principal">
+        <div class="brand">
+          <svg width="20" height="18" viewBox="0 0 20 18" aria-hidden="true">
+            <defs><linearGradient id="gb" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#1B4DFF"/><stop offset=".5" stop-color="#4DD8FF"/><stop offset="1" stop-color="#7B5CFF"/></linearGradient></defs>
+            <path d="M1 9c3-7 4 7 6 0s3 6 5 0 3 3 7 0" fill="none" stroke="url(#gb)" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span class="wordmark">Ava</span>
+        </div>
+
+        <div class="nav" role="tablist" aria-label="Superfícies">
+          <div class="nav-label">Conversa</div>
+          <button role="tab" data-v="live" aria-current="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7.5" y="3" width="5" height="9" rx="2.5"/><path d="M5 9.5a5 5 0 0 0 10 0M10 14.5V17"/></svg>Live
+          </button>
+          <button role="tab" data-v="ask" aria-current="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5h12v8H8l-4 3z"/></svg>Ask Ava
+          </button>
+        </div>
+
+        <div class="nav" role="tablist" aria-label="Trabalho">
+          <div class="nav-label">Trabalho</div>
+          <button role="tab" data-v="today" aria-current="page">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.6 1.6"/></svg>Today
+          </button>
+          <button role="tab" data-v="workstreams" aria-current="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h9"/></svg>Workstreams
+          </button>
+        </div>
+
+        <div class="nav" role="tablist" aria-label="Conhecimento">
+          <div class="nav-label">Conhecimento</div>
+          <button role="tab" data-v="memory" aria-current="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 4h9l3 3v9H4z"/><path d="M7 9h6M7 12h4"/></svg>Memory
+          </button>
+          <button role="tab" data-v="why" aria-current="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 13.5v-3M10 7h.01"/></svg>Why
+          </button>
+        </div>
+
+        <div class="rail-foot">
+          <div class="row"><span>Chamar a Ava</span><kbd>⌘K</kbd></div>
+          <div class="row"><span>Modelo externo</span><span class="mono">nenhum</span></div>
+        </div>
+      </nav>
+
+      <!-- ============ main ============ -->
+      <main class="main">
+
+        <!-- ---------- TODAY ---------- -->
+        <div class="view on" id="v-today" role="tabpanel" aria-label="Today">
+          <div class="presence">
+            <canvas class="wave" data-wave="today" width="1080" height="224" role="img" aria-label="Presença da Ava, estado atenção requerida"></canvas>
+            <p class="state-line warn">Estado · <b>atenção requerida</b></p>
+          </div>
+
+          <div class="head">
+            <h2>Today</h2>
+            <p>Composto por agregação. Cada item carrega a própria saúde de contexto e o workstream de origem — não existe saúde global.</p>
+          </div>
+
+          <div class="notice" role="status">
+            <strong>O contexto está incompleto em Pilot rollout.</strong>
+            <ul>
+              <li>Pilot rollout: nenhuma evidência posterior a 12 de agosto para a decisão de armazenamento.</li>
+            </ul>
+          </div>
+
+          <div class="block">
+            <h3>Precisa de decisão</h3>
+            <article class="card">
+              <div class="tags">
+                <span class="tag ws">Project Alpha</span>
+                <span class="tag strength">forte</span>
+                <span class="tag health-ok">contexto ok</span>
+              </div>
+              <h4>A decisão A foi substituída — as anotações passam a sincronizar por um armazenamento cifrado</h4>
+              <p>A especificação de sincronização foi escrita sobre a decisão anterior. Ela ainda descreve o comportamento antigo.</p>
+              <button class="why" data-goto="why">Ver por que a Ava afirma isso — 3 fontes</button>
+            </article>
+
+            <article class="card">
+              <div class="tags">
+                <span class="tag ws">Pilot rollout</span>
+                <span class="tag strength">moderada</span>
+                <span class="tag health-deg">contexto degradado</span>
+                <span class="tag time">quinta, 15h</span>
+              </div>
+              <h4>Os aparelhos do piloto podem ser reinstalados antes da sessão</h4>
+              <p>O TI reinstala os notebooks compartilhados por agenda. Anotações guardadas apenas localmente seriam perdidas. <strong>Lacuna declarada:</strong> não há evidência de quando a próxima reinstalação acontece.</p>
+              <button class="why" data-goto="why">Ver por que a Ava afirma isso — 1 fonte</button>
+            </article>
+          </div>
+
+          <div class="block">
+            <h3>Compromissos se aproximando</h3>
+            <article class="card">
+              <div class="tags">
+                <span class="tag ws">Pilot rollout</span>
+                <span class="tag strength">forte</span>
+                <span class="tag health-ok">contexto ok</span>
+                <span class="tag time">terça</span>
+              </div>
+              <h4>Apresentar o plano do piloto ao grupo</h4>
+              <p>Uma apresentação curta do plano é devida ao grupo.</p>
+              <button class="why" data-goto="why">Ver por que a Ava afirma isso — 2 fontes</button>
+            </article>
+          </div>
+
+          <div class="block">
+            <h3>Laços em aberto</h3>
+            <article class="card">
+              <div class="tags">
+                <span class="tag ws">Pilot rollout</span>
+                <span class="tag strength">fraca</span>
+                <span class="tag health-ins">contexto insuficiente</span>
+              </div>
+              <h4>Os usuários do piloto precisam de anotações em mais de um aparelho?</h4>
+              <p>Sem resposta. Determina se o desenho apenas local basta para o piloto. <strong>A Ava se abstém:</strong> não há evidência suficiente para uma recomendação.</p>
+              <button class="why" data-goto="why">Ver o que falta — 0 fontes elegíveis</button>
+            </article>
+          </div>
+
+          <div class="composer">
+            <button class="mic" aria-label="Falar com a Ava"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7.5" y="3" width="5" height="9" rx="2.5"/><path d="M5 9.5a5 5 0 0 0 10 0M10 14.5V17"/></svg></button>
+            <span class="ph">Pergunte alguma coisa.</span>
+            <span class="scope">Escopo: tudo</span>
+            <span class="hint mono">⌘K</span>
+          </div>
+        </div>
+
+        <!-- ---------- LIVE ---------- -->
+        <div class="view" id="v-live" role="tabpanel" aria-label="Live">
+          <div class="presence">
+            <canvas class="wave" data-wave="live" width="1080" height="224" role="img" aria-label="Presença da Ava, estado ouvindo"></canvas>
+            <p class="state-line">Estado · <b>ouvindo</b></p>
+          </div>
+
+          <div class="head">
+            <h2>Live</h2>
+            <p>Modo por turnos. A Ava nunca começa a ouvir sozinha — você pressiona para falar, e cada turno é um registro com custo e latência próprios.</p>
+          </div>
+
+          <div class="thread">
+            <div class="turn me">
+              <span class="who">Você · 14:02</span>
+              <div class="bubble">O que mudou no Project Alpha esta semana?</div>
+            </div>
+            <div class="turn ava">
+              <span class="who">Ava · 14:02 · 2,4s</span>
+              <div class="bubble">A decisão A foi substituída. As anotações deixaram de ser apenas locais e passam a sincronizar por um armazenamento cifrado. A especificação de sincronização foi escrita sobre a versão anterior e ainda descreve o comportamento antigo — é isso que eu levantaria primeiro.</div>
+              <div class="grounded">
+                <span class="tag strength">forte</span>
+                <span class="tag health-ok">contexto ok</span>
+                <span>Sustentado por 3 fontes</span>
+                <button class="why" data-goto="why">Mostre a evidência</button>
+              </div>
+            </div>
+            <div class="turn me">
+              <span class="who">Você · 14:04</span>
+              <div class="bubble">Os usuários do piloto precisam de anotações em mais de um aparelho?</div>
+            </div>
+            <div class="turn ava">
+              <span class="who">Ava · 14:04 · 1,9s</span>
+              <div class="bubble abstain">Não tenho o suficiente para responder isso. A pergunta está registrada como aberta desde 12 de agosto e nenhuma evidência posterior tocou nela. O que eu precisaria: qualquer coisa vinda dos usuários do piloto sobre uso em mais de um aparelho.</div>
+              <div class="grounded">
+                <span class="tag health-ins">contexto insuficiente</span>
+                <span>Abstenção declarada · 0 fontes elegíveis</span>
+              </div>
+            </div>
+            <div class="turn me">
+              <span class="who">Você · 14:06</span>
+              <div class="bubble">Anota que a apresentação do piloto ficou para terça.</div>
+            </div>
+            <div class="turn ava">
+              <span class="who">Ava · 14:06</span>
+              <div class="bubble">Entendi como um compromisso com data — terça. Antes de gravar no registro: é isso mesmo, ou era só um comentário?</div>
+              <div class="grounded">
+                <span class="tag">captura proposta</span>
+                <span>Nada foi escrito ainda</span>
+              </div>
+              <div class="acts" style="margin-top:2px">
+                <button class="btn primary">Confirmar compromisso</button>
+                <button class="btn">Era só comentário</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="composer">
+            <button class="mic" aria-label="Encerrar a sessão"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7.5" y="3" width="5" height="9" rx="2.5"/><path d="M5 9.5a5 5 0 0 0 10 0M10 14.5V17"/></svg></button>
+            <span class="ph">Ouvindo…</span>
+            <span class="scope">Transcrição sendo escrita</span>
+            <span class="hint mono">esc encerra</span>
+          </div>
+        </div>
+
+        <!-- ---------- ASK ---------- -->
+        <div class="view" id="v-ask" role="tabpanel" aria-label="Ask Ava">
+          <div class="presence">
+            <canvas class="wave" data-wave="ask" width="1080" height="224" role="img" aria-label="Presença da Ava, estado processando"></canvas>
+            <p class="state-line">Estado · <b>processando</b></p>
+          </div>
+
+          <div class="head">
+            <h2>Ask Ava</h2>
+            <p>Global por padrão, com recorte por workstream quando você pedir. Cognição pessoal já responde global; evidência de trabalho continua isolada por projeto.</p>
+          </div>
+
+          <div class="thread">
+            <div class="turn me">
+              <span class="who">Você · agora</span>
+              <div class="bubble">O que você sabe sobre como eu prefiro receber atualização de projeto?</div>
+            </div>
+            <div class="turn ava">
+              <span class="who">Ava</span>
+              <div class="bubble">Você me disse que prefere atualizações concisas. Isso está declarado, não inferido — e vale para todos os seus projetos, porque cognição pessoal é global por desenho.</div>
+              <div class="grounded">
+                <span class="tag strength">declarado por você</span>
+                <span class="tag health-ok">contexto ok</span>
+                <span>1 fonte · escopo global</span>
+                <button class="why" data-goto="why">Ver a redação original</button>
+              </div>
+            </div>
+            <div class="turn me">
+              <span class="who">Você · agora</span>
+              <div class="bubble">E o que a gente decidiu sobre a API em todos os meus projetos?</div>
+            </div>
+            <div class="turn ava">
+              <span class="who">Ava</span>
+              <div class="bubble abstain">Não consigo responder isso do jeito que você perguntou. Eu recupero evidência dentro de um workstream por vez — cruzar evidência entre projetos é um limite que o sistema não atravessa hoje. Posso responder projeto a projeto, se você quiser.</div>
+              <div class="grounded">
+                <span class="tag">limite de escopo</span>
+                <span>Nenhuma evidência cruzou entre projetos</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="composer">
+            <button class="mic" aria-label="Falar com a Ava"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7.5" y="3" width="5" height="9" rx="2.5"/><path d="M5 9.5a5 5 0 0 0 10 0M10 14.5V17"/></svg></button>
+            <span class="ph">Pergunte alguma coisa.</span>
+            <span class="scope">Escopo: tudo</span>
+            <span class="hint mono">⌘K</span>
+          </div>
+        </div>
+
+        <!-- ---------- WORKSTREAMS ---------- -->
+        <div class="view" id="v-workstreams" role="tabpanel" aria-label="Workstreams">
+          <div class="head" style="margin-top:8px">
+            <h2>Workstreams</h2>
+            <p>Fronteira de contexto, não hierarquia de navegação. É o que mantém a evidência de um projeto fora das respostas de outro — uma propriedade de correção, não um menu.</p>
+          </div>
+
+          <div class="block">
+            <h3>Ativos</h3>
+            <article class="card">
+              <div class="tags">
+                <span class="tag health-ok">contexto ok</span>
+                <span class="tag strength">14 evidências</span>
+                <span class="tag">2 mudanças</span>
+              </div>
+              <h4>Project Alpha</h4>
+              <p>Entregar uma primeira versão utilizável do leitor Alpha, capaz de ler e anotar documento offline.</p>
+              <button class="why" data-goto="today">Abrir o Today deste projeto</button>
+            </article>
+
+            <article class="card">
+              <div class="tags">
+                <span class="tag health-deg">contexto degradado</span>
+                <span class="tag strength">9 evidências</span>
+                <span class="tag">1 pergunta aberta</span>
+              </div>
+              <h4>Pilot rollout</h4>
+              <p>Levar o leitor Alpha ao grupo piloto, lendo e anotando documentos até o fim do mês.</p>
+              <p style="color:var(--amber)">Lacuna: nenhuma evidência posterior a 12 de agosto sobre a decisão de armazenamento.</p>
+              <button class="why" data-goto="today">Abrir o Today deste projeto</button>
+            </article>
+          </div>
+
+          <div class="block">
+            <h3>Sem atividade recente</h3>
+            <div class="empty">Nada aqui. Quando um workstream ficar trinta dias sem evidência nova, ele aparece nesta lista.</div>
+          </div>
+
+          <div class="composer">
+            <button class="mic" aria-label="Falar com a Ava"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7.5" y="3" width="5" height="9" rx="2.5"/><path d="M5 9.5a5 5 0 0 0 10 0M10 14.5V17"/></svg></button>
+            <span class="ph">Pergunte alguma coisa.</span>
+            <span class="scope">Escopo: tudo</span>
+            <span class="hint mono">⌘K</span>
+          </div>
+        </div>
+
+        <!-- ---------- MEMORY ---------- -->
+        <div class="view" id="v-memory" role="tabpanel" aria-label="Memory">
+          <div class="head" style="margin-top:8px">
+            <h2>O que a Ava sabe</h2>
+            <p>Cinco seções visualmente distintas. A separação é o produto: numa lista única, um palpite e uma frase que você escreveu virariam o mesmo tipo de objeto.</p>
+          </div>
+
+          <div class="block">
+            <h3>Declarado por você — a Ava trata como autoridade</h3>
+            <article class="card declared">
+              <div class="tags"><span class="tag strength">confirmado por você</span><span class="tag">preferência</span><span class="tag mono">v2</span></div>
+              <h4>Prefiro atualizações de projeto concisas.</h4>
+              <p>Aplica-se a todos os workstreams · declarado 12 ago 2025</p>
+              <button class="why" data-goto="why">Ver a redação no registro</button>
+            </article>
+          </div>
+
+          <div class="block">
+            <h3>Conhecimento sustentado por evidência</h3>
+            <article class="card">
+              <div class="tags"><span class="tag strength">forte</span><span class="tag">decisão</span><span class="tag ws">Project Alpha</span></div>
+              <h4>As anotações sincronizam por um armazenamento cifrado</h4>
+              <p>Promovido em 20 ago 2025 · 3 fontes</p>
+              <button class="why" data-goto="why">Ver por que a Ava tem isso — 3 fontes</button>
+            </article>
+          </div>
+
+          <div class="block">
+            <h3>Hipóteses de comportamento — a Ava supôs, você não disse</h3>
+            <article class="card inferred">
+              <div class="tags"><span class="tag strength">moderada</span><span class="tag">não declarado</span></div>
+              <h4>Você tende a escolher o resumo curto quando existe a versão longa</h4>
+              <p>Observado duas vezes: changelog curto sobre o anotado, resumo curto sobre a análise detalhada. <strong>Isto é uma hipótese</strong> — a Ava não pode afirmar como preferência sua até você confirmar.</p>
+              <div class="acts">
+                <button class="btn primary">Confirmar como declaração</button>
+                <button class="btn">Descartar</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="block">
+            <h3>Incerto — abaixo do limiar de promoção</h3>
+            <article class="card inferred">
+              <div class="tags"><span class="tag strength">fraca</span><span class="tag">1 fonte</span></div>
+              <h4>O grupo piloto pode precisar de acesso em mais de um aparelho</h4>
+              <p>Uma única menção, sem confirmação. Não entra em resposta nenhuma enquanto estiver aqui.</p>
+            </article>
+          </div>
+
+          <div class="block">
+            <h3>Substituído — nada foi apagado</h3>
+            <article class="card superseded">
+              <div class="tags"><span class="tag">substituído em 20 ago</span><span class="tag mono">v1</span></div>
+              <h4>Decisão A: armazenar anotações apenas localmente</h4>
+              <p>Continua no registro e continua consultável. A versão que a substituiu está em conhecimento sustentado por evidência.</p>
+              <button class="why" data-goto="why">Ver a cadeia de versões</button>
+            </article>
+          </div>
+
+          <div class="composer">
+            <button class="mic" aria-label="Falar com a Ava"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7.5" y="3" width="5" height="9" rx="2.5"/><path d="M5 9.5a5 5 0 0 0 10 0M10 14.5V17"/></svg></button>
+            <span class="ph">Conte alguma coisa para a Ava.</span>
+            <span class="scope">Vai para o registro</span>
+            <span class="hint mono">⌘K</span>
+          </div>
+        </div>
+
+        <!-- ---------- WHY ---------- -->
+        <div class="view" id="v-why" role="tabpanel" aria-label="Why">
+          <div class="head" style="margin-top:8px">
+            <h2>Por que a Ava afirma isso</h2>
+            <p>Toda assertiva tem esta página. Evidência bruta, origem do conteúdo, quando foi observada e o que a Ava fez com ela.</p>
+          </div>
+
+          <div class="block">
+            <h3>A afirmação</h3>
+            <article class="card">
+              <div class="tags"><span class="tag ws">Project Alpha</span><span class="tag strength">forte</span><span class="tag health-ok">contexto ok</span></div>
+              <h4>A decisão A foi substituída — as anotações passam a sincronizar por um armazenamento cifrado</h4>
+            </article>
+          </div>
+
+          <div class="block">
+            <h3>Sustentada por três fontes</h3>
+            <article class="card">
+              <div class="tags"><span class="tag mono">ev_7f21c4</span><span class="tag">escrito por você</span><span class="tag mono">20 ago 2025 09:14Z</span></div>
+              <p style="color:var(--text)">"A decisão A foi substituída: as anotações sincronizam por um armazenamento cifrado, não mais apenas locais."</p>
+            </article>
+            <article class="card">
+              <div class="tags"><span class="tag mono">ev_3a90de</span><span class="tag">escrito por você</span><span class="tag mono">12 ago 2025 16:02Z</span></div>
+              <p style="color:var(--text)">"Especificação de sincronização redigida sobre a decisão A."</p>
+            </article>
+            <article class="card">
+              <div class="tags"><span class="tag mono">ev_1c55b8</span><span class="tag">escrito por você</span><span class="tag mono">04 ago 2025 11:40Z</span></div>
+              <p style="color:var(--text)">"Decisão A: armazenar anotações apenas localmente, escolhida por confiabilidade offline."</p>
+            </article>
+          </div>
+
+          <div class="block">
+            <h3>O que a Ava fez com isso</h3>
+            <article class="card">
+              <p style="color:var(--text)">Detectou que <span class="mono" style="color:var(--cyan)">ev_7f21c4</span> contradiz <span class="mono" style="color:var(--cyan)">ev_1c55b8</span> e é posterior. Marcou a decisão anterior como substituída, sem apagá-la, e registrou a mudança. A especificação de sincronização continua apontando para a versão antiga — por isso o item apareceu no Today.</p>
+              <p>Nenhum modelo externo participou. Este laço é determinístico de ponta a ponta.</p>
+            </article>
+          </div>
+
+          <div class="composer">
+            <button class="mic" aria-label="Falar com a Ava"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7.5" y="3" width="5" height="9" rx="2.5"/><path d="M5 9.5a5 5 0 0 0 10 0M10 14.5V17"/></svg></button>
+            <span class="ph">Pergunte sobre esta evidência.</span>
+            <span class="scope">Escopo: Project Alpha</span>
+            <span class="hint mono">⌘K</span>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- ============ aside ============ -->
+      <aside class="aside" aria-label="Contexto">
+        <div class="panel">
+          <div class="lbl"><i aria-hidden="true"></i>Saúde do contexto</div>
+          <p>Duas fontes ativas, uma delas degradada.</p>
+          <ul class="ledger">
+            <li><span class="mono" style="color:var(--ok)">ok</span> · Project Alpha — 14 evidências, nada em aberto</li>
+            <li><span class="mono" style="color:var(--amber)">degradado</span> · Pilot rollout — sem evidência após 12 ago</li>
+          </ul>
+          <p class="dim">Não existe saúde global. Cada item carrega a sua.</p>
+        </div>
+
+        <div class="panel">
+          <div class="lbl">Este turno</div>
+          <ul class="ledger">
+            <li>Recuperação <span class="mono">124ms</span></li>
+            <li>Saúde e políticas <span class="mono">38ms</span></li>
+            <li>Validação de ancoragem <span class="mono">passou</span></li>
+            <li>Chamadas externas <span class="mono">0</span></li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <div class="lbl">Registro</div>
+          <p class="dim">Tudo que entra é acrescentado, nunca sobrescrito. Uma correção vira uma linha nova e passa a fazer parte do histórico.</p>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+  <!-- ============ gallery ============ -->
+  <section class="gallery">
+    <div class="gallery-head">
+      <h2>Os oito estados na linha</h2>
+      <p>A tradução que este protótipo precisou resolver: o núcleo atual codifica saúde de contexto como um arco que abre. Numa linha, isso vira <strong>continuidade</strong>. Degradado quebra a linha; insuficiente quebra mais e apaga. Legível sem texto e sem cor — como o pacote de experiência exige. Clique para aplicar no protótipo acima.</p>
+    </div>
+    <div class="states" id="states"></div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- state vocabulary -------------------------------------------------
+  // amp: amplitude · rate: phase speed · travel: travelling wave
+  // gaps: how much of the line is missing (context health)
+  // dim: luminance · warm/red: hue shift · strands: how many fibres survive
+  var STATES = {
+    idle:        {label:'em repouso',        amp:0.20, rate:0.10, travel:0.00, gaps:0.00, dim:0.82, warm:0, red:0, strands:4, tone:'',     note:'Nada pendente. Respiração lenta e inteira.'},
+    listening:   {label:'ouvindo',           amp:1.00, rate:0.16, travel:0.05, gaps:0.00, dim:1.00, warm:0, red:0, strands:4, tone:'',     note:'Amplitude cheia, acompanha a voz. É um indicador real de entrada.'},
+    processing:  {label:'processando',       amp:0.42, rate:0.13, travel:0.62, gaps:0.00, dim:0.88, warm:0, red:0, strands:4, tone:'',     note:'Onda viajante, contida. Não é barra de progresso — a duração é desconhecida.'},
+    speaking:    {label:'falando',           amp:0.66, rate:0.22, travel:0.10, gaps:0.00, dim:1.02, warm:0, red:0, strands:4, tone:'',     note:'Cadência mais curta, acompanha a fala. Nunca chega à altura de ouvindo.'},
+    attention:   {label:'atenção requerida', amp:0.46, rate:0.11, travel:0.00, gaps:0.00, dim:0.96, warm:1, red:0, strands:4, tone:'warn', note:'Âmbar constante, fora de eixo. Nunca pisca.'},
+    degraded:    {label:'contexto degradado',amp:0.40, rate:0.09, travel:0.00, gaps:0.34, dim:0.72, warm:1, red:0, strands:3, tone:'warn', note:'A linha se rompe. A resposta vem com lacunas declaradas.'},
+    insufficient:{label:'contexto insuficiente',amp:0.26,rate:0.07,travel:0.00, gaps:0.62, dim:0.46, warm:0, red:0, strands:2, tone:'dim',  note:'Rompe mais e escurece. Ela parece menos certa porque está.'},
+    error:       {label:'falha técnica',     amp:0.58, rate:0.30, travel:0.00, gaps:0.18, dim:0.9,  warm:0, red:1, strands:4, tone:'dim',  note:'Fragmentada e irregular. Falha não é o mesmo que incerteza.'}
+  };
+
+  var COOL = ['#1B4DFF','#4DD8FF','#7B5CFF','#8FE6FF'];
+  var WARM = ['#E0B062','#FFCD8A','#E0B062','#FFE0B8'];
+  var RED  = ['#FF6B4D','#FF9A6B','#F0797F','#FFC4A3'];
+
+  var FIBRES = [
+    {amp:54, freq:1.5, speed:0.20, w:2.3},
+    {amp:40, freq:2.1, speed:0.15, w:1.9},
+    {amp:28, freq:2.8, speed:0.11, w:1.5},
+    {amp:16, freq:3.6, speed:0.24, w:1.1}
+  ];
+
+  function hex(s){ return [parseInt(s.slice(1,3),16),parseInt(s.slice(3,5),16),parseInt(s.slice(5,7),16)]; }
+  function lerp(a,b,k){ return a+(b-a)*k; }
+  function mix3(c1,c2,c3,warm,red){
+    var A=hex(c1),B=hex(c2),C=hex(c3);
+    var r=lerp(lerp(A[0],B[0],warm),C[0],red);
+    var g=lerp(lerp(A[1],B[1],warm),C[1],red);
+    var b=lerp(lerp(A[2],B[2],warm),C[2],red);
+    return 'rgb('+Math.round(r)+','+Math.round(g)+','+Math.round(b)+')';
+  }
+
+  // gaps are deterministic per fibre, so the same state always breaks the
+  // line in the same places — a person can learn the shape.
+  function visible(fi, p, gaps){
+    if(gaps <= 0) return true;
+    var seed = (fi*0.37 + 0.11);
+    var n = Math.sin((p*6.0 + seed*11.0) * Math.PI) * 0.5 + 0.5;
+    return n > gaps * 0.92;
+  }
+
+  function makeRenderer(canvas, initial){
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    var N = 170;
+    var cur = Object.assign({}, STATES[initial]);
+    var target = STATES[initial];
+    var phase = [0,0,0,0];
+    var last = 0, elapsed = 0;
+
+    function step(now){
+      var dt = last ? Math.min((now-last)/1000, 0.05) : 0;
+      last = now; elapsed += dt;
+
+      var k = Math.min(1, dt/0.9);
+      ['amp','rate','travel','gaps','dim','warm','red','strands'].forEach(function(key){
+        cur[key] = lerp(cur[key], target[key], k);
+      });
+
+      for(var i=0;i<4;i++) phase[i] += FIBRES[i].speed * cur.rate * 6.0 * dt;
+      var travelPhase = elapsed * cur.travel;
+      var breath = 1 + Math.sin(elapsed*(Math.PI*2/14)) * 0.18;
+
+      ctx.clearRect(0,0,W,H);
+      ctx.globalCompositeOperation='lighter';
+      ctx.lineJoin='round'; ctx.lineCap='round';
+
+      for(var f=0; f<4; f++){
+        var fib = FIBRES[f];
+        // fibres fade out one by one as context degrades
+        var alive = Math.max(0, Math.min(1, cur.strands - f));
+        if(alive <= 0.01) continue;
+
+        var col = mix3(COOL[f], WARM[f], RED[f], cur.warm, cur.red);
+        ctx.strokeStyle = col;
+        ctx.lineWidth = fib.w;
+        ctx.shadowColor = col;
+        ctx.shadowBlur = 13 * cur.dim;
+        ctx.globalAlpha = alive * cur.dim;
+
+        var drawing = false;
+        ctx.beginPath();
+        for(var j=0;j<=N;j++){
+          var p = j/N;
+          if(!visible(f, p, cur.gaps)){ drawing = false; continue; }
+          var env = Math.pow(Math.sin(Math.PI*p), 1.7);
+          var tw = 1 + Math.sin((p - travelPhase)*Math.PI*2) * cur.travel * 0.6;
+          var y = H/2 + Math.sin(p*fib.freq*Math.PI*2 + phase[f] + f*0.7)
+                        * fib.amp * cur.amp * env * breath * tw;
+          var x = p*W;
+          if(!drawing){ ctx.moveTo(x,y); drawing = true; } else ctx.lineTo(x,y);
+        }
+        ctx.stroke();
+      }
+
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation='source-over';
+      ctx.shadowBlur = 0;
+      raf = requestAnimationFrame(step);
+    }
+
+    var raf = null;
+    if(reduce){ step(performance.now()); cancelAnimationFrame(raf); }
+    else raf = requestAnimationFrame(step);
+
+    return { set: function(s){ target = STATES[s]; } };
+  }
+
+  // ---- the prototype's own wave, one per view ---------------------------
+  var VIEW_STATE = {
+    today:'attention', live:'listening', ask:'processing',
+    workstreams:'idle', memory:'idle', why:'idle'
+  };
+  var waves = {};
+  Array.prototype.forEach.call(document.querySelectorAll('[data-wave]'), function(cv){
+    var v = cv.dataset.wave;
+    waves[v] = makeRenderer(cv, VIEW_STATE[v] || 'idle');
+  });
+
+  // ---- navigation -------------------------------------------------------
+  var PATHS = {today:'ava — today', live:'ava — live', ask:'ava — ask',
+               workstreams:'ava — workstreams', memory:'ava — memory', why:'ava — why'};
+  var TINT = {
+    attention:['#E0B062','#FFCD8A','#7B5CFF'],
+    degraded:['#E0B062','#8A6A3A','#40331F'],
+    insufficient:['#2A3550','#1E2740','#26203A'],
+    error:['#FF6B4D','#F0797F','#7B5CFF'],
+    idle:['#1B4DFF','#4DD8FF','#7B5CFF'],
+    listening:['#1B4DFF','#4DD8FF','#7B5CFF'],
+    processing:['#1B4DFF','#4DD8FF','#7B5CFF'],
+    speaking:['#1B4DFF','#4DD8FF','#7B5CFF']
+  };
+  var f1=document.getElementById('f1'), f2=document.getElementById('f2'), f3=document.getElementById('f3');
+  function tint(state){
+    var t = TINT[state] || TINT.idle;
+    f1.style.background=t[0]; f2.style.background=t[1]; f3.style.background=t[2];
+    var lowlight = (state==='insufficient');
+    f1.style.opacity = lowlight ? .14 : .26;
+    f3.style.opacity = lowlight ? .10 : .19;
+  }
+
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.nav button'));
+  var pathEl = document.getElementById('chrome-path');
+  var currentView = 'today';
+
+  function show(v){
+    currentView = v;
+    tabs.forEach(function(t){ t.setAttribute('aria-current', t.dataset.v===v ? 'page' : 'false'); });
+    Array.prototype.forEach.call(document.querySelectorAll('.view'), function(el){
+      el.classList.toggle('on', el.id === 'v-'+v);
+    });
+    pathEl.textContent = PATHS[v];
+    tint(VIEW_STATE[v] || 'idle');
+  }
+  tabs.forEach(function(t){ t.addEventListener('click', function(){ show(t.dataset.v); }); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-goto]'), function(b){
+    b.addEventListener('click', function(){ show(b.dataset.goto); });
+  });
+
+  // ---- state gallery ----------------------------------------------------
+  var host = document.getElementById('states');
+  var order = ['idle','listening','processing','speaking','attention','degraded','insufficient','error'];
+  var chips = [];
+
+  order.forEach(function(key){
+    var s = STATES[key];
+    var btn = document.createElement('button');
+    btn.className = 'st';
+    btn.setAttribute('aria-pressed','false');
+    btn.innerHTML = '<canvas width="520" height="112"></canvas>' +
+                    '<span class="nm">' + s.label.charAt(0).toUpperCase() + s.label.slice(1) + '</span>' +
+                    '<span class="ds">' + s.note + '</span>';
+    host.appendChild(btn);
+    makeRenderer(btn.querySelector('canvas'), key);
+    chips.push(btn);
+
+    btn.addEventListener('click', function(){
+      chips.forEach(function(o){ o.setAttribute('aria-pressed', String(o === btn)); });
+      var w = waves[currentView];
+      if(w) w.set(key);
+      tint(key);
+      var line = document.querySelector('#v-'+currentView+' .state-line');
+      if(line){
+        line.className = 'state-line' + (s.tone ? ' '+s.tone : '');
+        line.innerHTML = 'Estado · <b>' + s.label + '</b>';
+      }
+    });
+  });
+})();
+</script>
